@@ -1,0 +1,4 @@
+#ifndef PIPEGNUPLOTTER_H
+#define PIPEGNUPLOTTER_H
+
+#endif // PIPEGNUPLOTTER_H
