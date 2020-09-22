@@ -58,12 +58,10 @@ int main(int argc, char *argv[])
     ab->dumpAltitudeProfile(ab->getAltitudeProfileHumidity(averager), dumpedHumidityProfile);
 
     //PipeGnuplotter::plot2d(dumpedHumidityProfile);
-    std::thread t2 = Plotter::Threaded::altitudeScatter2d(dumpedHumidityProfile, 1, "absolute humidity", "height");
-    std::thread t3 = Plotter::Threaded::altitudePlot2d(dumpedHumidityProfile, 1, "absolute humidity", "height");
+    std::thread t2 = Plotter::Threaded::altitudePlot2d(dumpedHumidityProfile, 1, "absolute humidity", "height");
 
     t1.join();
     t2.join();
-    t3.join();
 
     std::remove(dumped3DPic.c_str());
     std::remove(dumpedHumidityProfile.c_str());
