@@ -7,9 +7,11 @@
 #include <utility>
 #include <random>
 #include <string>
+#include <thread>
 #include "abox.h"
 #include "averager.h"
-#include "pipegnuplotter.h"
+//#include "pipegnuplotter.h"
+#include "plotter.h"
 
 
 int main(int argc, char *argv[])
@@ -20,7 +22,7 @@ int main(int argc, char *argv[])
     double PX = 10000 / s, PY = 5000 / s, PZ = 2100 / s;
     double Nx = 100*2, Ny = 50*2, Nz = 21*2;
     double l0 = 0.1 / s, L0 = 500 / s;
-    int numberInhomogeneities = 1000;
+    int numberInhomogeneities = 100;
     double fluctuationAmplitude = 10.;
 
     std::srand(42);
@@ -42,8 +44,8 @@ int main(int argc, char *argv[])
     ab->dumpInhomogeneities(dumped3DPic);
     averager->dump(dumped3DPic);
 
-    PipeGnuplotter::scatter3d(dumped3DPic);
-
+    //PipeGnuplotter::scatter3d(dumped3DPic);
+    std::thread t1 = Plotter::Threaded::scatter3d(dumped3DPic, 3);
 
     std::default_random_engine g;
     std::uniform_real_distribution<double> dist(0, fluctuationAmplitude);
@@ -53,13 +55,20 @@ int main(int argc, char *argv[])
     ab->applyStructuralInhomogeneities(false);
 
     std::string dumpedHumidityProfile = "tmp01.txt";
-//    ab->getAltitudeProfileHumidity(averager);
     ab->dumpAltitudeProfile(ab->getAltitudeProfileHumidity(averager), dumpedHumidityProfile);
 
-    PipeGnuplotter::plot2d(dumpedHumidityProfile);
+    //PipeGnuplotter::plot2d(dumpedHumidityProfile);
+    std::thread t2 = Plotter::Threaded::altitudeScatter2d(dumpedHumidityProfile, 1, "absolute humidity", "height");
+    std::thread t3 = Plotter::Threaded::altitudePlot2d(dumpedHumidityProfile, 1, "absolute humidity", "height");
+
+    t1.join();
+    t2.join();
+    t3.join();
 
     std::remove(dumped3DPic.c_str());
     std::remove(dumpedHumidityProfile.c_str());
 
-    return a.exec();
+    exit(0);
+
+//    return a.exec();
 }

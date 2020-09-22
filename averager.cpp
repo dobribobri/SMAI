@@ -30,7 +30,10 @@ void Averager::dump(std::string file_path, std::tuple<int, int, int> resolution)
     std::vector<Dot3D> points = this->digitize(resolution);
     for (unsigned int i = 0; i < points.size(); i++) {
         std::tie(x, y, z) = points[i];
-        out << x << " " << y << " " << z << std::endl;
+        out << x << " " << y << " " << z << " ";
+        float r, g, b, a;
+        std::tie(r, g, b, a) = this->color;
+        out << r << " " << g << " " << b << " " << a << std::endl;
     }
     out << '\n' << std::endl;
     out.close();

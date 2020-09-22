@@ -36,4 +36,8 @@ HEADERS += \
     inhomogeneity.h \
     linspace.h \
     pipegnuplotter.h \
+    plotter.h \
     rotation.h
+
+DISTFILES += \
+    plotter.py

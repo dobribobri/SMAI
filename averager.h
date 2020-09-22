@@ -3,6 +3,7 @@
 
 #define Dot3D std::tuple<double, double, double>
 #define TColor std::tuple<float, float, float, float>
+#define crimson std::make_tuple(220./255., 20./255., 60./255., 0.05)
 
 #include "rotation.h"
 #include <tuple>
@@ -28,7 +29,7 @@ public:
 
     Averager(ABox* _aBox, Dot3D _center, double _height,
              std::tuple<double, double, double> _rotation = std::make_tuple(0,0,0),
-             TColor _color = std::make_tuple(1,1,1,1));
+             TColor _color = crimson);
 
     virtual bool includesQ(Dot3D coordinates) = 0;
 
@@ -49,7 +50,7 @@ public:
                  double _height,
                  double _ax, double _by, double _cz = 1.,
                  std::tuple<double, double, double> _rotation = std::make_tuple(0,0,0),
-                 TColor _color = std::make_tuple(1,1,1,1)) :
+                 TColor _color = crimson) :
         Averager(_aBox, _center, _height, _rotation, _color),
         a(_ax), b(_by), c(_cz) { }
 
@@ -66,7 +67,7 @@ public:
                      double _height,
                      double _ax, double _by,
                      std::tuple<double, double, double> _rotation = std::make_tuple(0,0,0),
-                     TColor _color = std::make_tuple(1,1,1,1)) :
+                     TColor _color = crimson) :
         Averager(_aBox, std::make_tuple(std::get<0>(_center), std::get<1>(_center), 0), _height, _rotation, _color),
         a(_ax), b(_by) { }
 
