@@ -2,8 +2,11 @@
 #define ABOX_H
 
 #define Dot3D std::tuple<double, double, double>
+#define Profile std::vector<double>
+#define Spectrum std::vector<std::pair<double, double>>
 
 #include "field.h"
+#include "attenuationmodel.h"
 #include <iostream>
 #include <vector>
 #include <fstream>
@@ -62,7 +65,7 @@ public:
 
     void setLambdaPressure(const std::function<double(double, Dot3D)> expression);
 
-    void setLambdaHumidity(const std::function<double(double, Dot3D)> expression);
+    void setLambdaHumidity(std::function<double(double, Dot3D)> expression);
 
     void createStructuralInhomogeneities(int amount = 100, bool verbose = true);
 
@@ -80,12 +83,26 @@ public:
     std::vector<double> getAltitudeProfileHumidity(double x, double y);
     std::vector<double> getAltitudeProfileHumidity(Averager* avr);
 
-    void dumpAltitudeProfile(std::vector<double> profile, std::string file_path);
+    void dumpAltitudeProfile(std::vector<double> profile, std::string file_path, bool append = true);
 
     Inhomogeneity* findInhomogeneity(int number);
 
     void dumpInhomogeneities(std::string file_path,
-                             std::tuple<int, int, int> resolution = std::make_tuple(10, 10, 10));
+                             std::tuple<int, int, int> resolution = std::make_tuple(10, 10, 10),
+                             bool append = true);
+
+    void move(std::tuple<double, double, double> s);
+    void move(std::tuple<double, double, double> v, double t);
+
+    std::vector<std::pair<double, double>> getBrightnessTemperature(std::vector<double> frequencies,
+                             Averager* avr, AttenuationModel* model, double theta = 0.);
+
+    void dumpSpectrum(std::vector<std::pair<double, double>> spectrum,
+                      std::string file_path, bool append = true);
+    void dumpSpectrum(std::vector<std::pair<double, double>> spectrum,
+                      std::vector<double> frequency, std::string file_path, bool append = true);
+    void dumpSpectrum(std::vector<std::pair<double, double>> spectrum,
+                      double frequency, double t, std::string file_path, bool append = true);
 
 };
 

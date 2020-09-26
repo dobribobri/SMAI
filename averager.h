@@ -35,9 +35,9 @@ public:
 
     std::vector<Dot3D> digitize(std::tuple<int, int, int> resolution);
 
-    void dump(std::string file_path, std::tuple<int, int, int> resolution = std::make_tuple(100, 100, 100));
+    void dump(std::string file_path, std::tuple<int, int, int> resolution = std::make_tuple(100, 100, 100), bool append = true);
 
-    virtual ~Averager() { }
+    virtual ~Averager() = 0;
 
 };
 

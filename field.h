@@ -22,7 +22,7 @@ public:
 
     void initialize();
 
-    void applyLambda(const std::function<double(double, Dot3D)> lambda,
+    void applyLambda(std::function<double(double, Dot3D)> lambda,
                      std::tuple<int, int, int> indexes, Dot3D point);
 
 };

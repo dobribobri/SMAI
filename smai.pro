@@ -3,6 +3,9 @@ QT -= gui
 CONFIG += c++11 console
 CONFIG -= app_bundle
 
+QMAKE_CFLAGS += -O2
+QMAKE_CXXFLAGS += -O2
+
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
@@ -16,6 +19,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         abox.cpp \
+        attenuationmodel.cpp \
         averager.cpp \
         digitizer.cpp \
         field.cpp \
@@ -29,6 +33,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     abox.h \
+    attenuationmodel.h \
     averager.h \
     colormod.h \
     digitizer.h \

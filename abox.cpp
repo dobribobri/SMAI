@@ -73,7 +73,7 @@ void ABox::setLambdaPressure(const std::function<double (double, std::tuple<doub
     this->lambdaPressure = expression;
 }
 
-void ABox::setLambdaHumidity(const std::function<double (double, std::tuple<double, double, double>)> expression) {
+void ABox::setLambdaHumidity(std::function<double (double, std::tuple<double, double, double>)> expression) {
     this->lambdaHumidity = expression;
 }
 
@@ -243,9 +243,10 @@ std::vector<double> ABox::getAltitudeProfileHumidity(Averager *avr) {
     return profile;
 }
 
-void ABox::dumpAltitudeProfile(std::vector<double> profile, std::string file_path) {
+void ABox::dumpAltitudeProfile(std::vector<double> profile, std::string file_path, bool append) {
     std::ofstream out;
-    out.open(file_path);
+    if (append) out.open(file_path, std::ios::app);
+    else out.open(file_path);
     for (unsigned int k = 0; k < profile.size(); k++)
         out << profile[k] << " " << this->__z(int(k)) << std::endl;
     out << std::endl;
@@ -259,10 +260,11 @@ Inhomogeneity* ABox::findInhomogeneity(int number) {
     return nullptr;
 }
 
-void ABox::dumpInhomogeneities(std::string file_path, std::tuple<int, int, int> resolution) {
+void ABox::dumpInhomogeneities(std::string file_path, std::tuple<int, int, int> resolution, bool append) {
     clock_t start = clock();
     std::ofstream out;
-    out.open(file_path, std::ios::app);
+    if (append) out.open(file_path, std::ios::app);
+    else out.open(file_path);
     double x, y, z;
     for (Inhomogeneity* e: this->inhomogeneities) {
         std::vector<Dot3D> points = e->digitize(resolution);
@@ -284,6 +286,92 @@ void ABox::dumpInhomogeneities(std::string file_path, std::tuple<int, int, int> 
     std::cout << green << "ABox.dumpInhomogeneities(..)\t-\t" << seconds << " sec." << def << std::endl;
 }
 
+void ABox::move(std::tuple<double, double, double> s) {
+    double x, y, z;
+    std::tie(x, y, z) = s;
+    for (Inhomogeneity* e: this->inhomogeneities) {
+        e->xi += x; e->yi += y; e->zi += z;
+    }
+}
+
+void ABox::move(std::tuple<double, double, double> v, double t) {
+    double x, y, z;
+    std::tie(x, y, z) = v;
+    x *= t; y *= t; z *= t;
+    this->move(std::make_tuple(x, y, z));
+}
+
+std::vector<std::pair<double, double>> ABox::getBrightnessTemperature(std::vector<double> frequencies, Averager* avr, AttenuationModel* model, double theta) {
+
+    std::vector<double> T = this->getAltitudeProfileTemperature(avr);
+    std::vector<double> P = this->getAltitudeProfilePressure(avr);
+    std::vector<double> Rho = this->getAltitudeProfileHumidity(avr);
+    double dh = PZ / (Nz - 1);
+
+    std::function<double(int, int)> gamma = [&](int i, int k){
+        double f = frequencies[unsigned(i)], t = T[unsigned(k)], p = P[unsigned(k)], rho = Rho[unsigned(k)];
+        double ox = model->gammaOxygen(f, t, p);
+        double wv = model->gammaWVapor(f, t, p, rho);
+        return (ox + wv) / cos(theta * M_PI / 180) * model->dB2np;
+    };
+    std::function<double(int, int)> Igamma = [&dh,gamma](int i, int H){
+        if (H == 0) return 0.;
+        double integ = dh * (gamma(i, 0) + gamma(i, H - 1)) / 2.;
+        for (int k = 1; k < H - 1; k++) integ += dh * gamma(i, k);
+        return integ;
+    };
+    std::function<double(int, int)> f = [&T,gamma,Igamma](int i, int h){
+        return (T[unsigned(h)] + 273.15) * gamma(i, h) * exp(-Igamma(i, h));
+    };
+    std::vector<std::pair<double, double>> res;
+    for (int i = 0; i < int(frequencies.size()); i++) {
+        double integ = dh * (f(i, 0) + f(i, Nz - 1)) / 2.;
+        for (int k = 1; k < Nz - 1; k++) integ += dh * f(i, k);
+        res.push_back(std::make_pair(frequencies[unsigned(i)], integ));
+    }
+    return res;
+}
+
+void ABox::dumpSpectrum(std::vector<std::pair<double, double>> spectrum, std::string file_path, bool append) {
+    std::ofstream out;
+    if (append) out.open(file_path, std::ios::app);
+    else out.open(file_path);
+    for (unsigned int k = 0; k < spectrum.size(); k++) {
+        double freq, val;
+        std::tie(freq, val) = spectrum[k];
+        out << freq << " " << val << std::endl;
+    }
+    out << std::endl;
+    out.close();
+}
+
+void ABox::dumpSpectrum(std::vector<std::pair<double, double>> spectrum, std::vector<double> frequencies, std::string file_path, bool append) {
+    std::ofstream out;
+    if (append) out.open(file_path, std::ios::app);
+    else out.open(file_path);
+    for (unsigned int k = 0; k < spectrum.size(); k++) {
+        double freq, val;
+        std::tie(freq, val) = spectrum[k];
+        for (unsigned int i = 0; i < frequencies.size(); i++)
+            if (abs(freq - frequencies[i]) < 0.00001)
+                out << freq << " " << val << std::endl;
+    }
+    out << std::endl;
+    out.close();
+}
+
+void ABox::dumpSpectrum(std::vector<std::pair<double, double> > spectrum, double frequency, double t, std::string file_path, bool append) {
+    std::ofstream out;
+    if (append) out.open(file_path, std::ios::app);
+    else out.open(file_path);
+    for (unsigned int k = 0; k < spectrum.size(); k++) {
+        double freq, val;
+        std::tie(freq, val) = spectrum[k];
+        if (abs(freq - frequency) < 0.00001)
+             out << t << " " << val << std::endl;
+    }
+    out.close();
+}
 
 
 

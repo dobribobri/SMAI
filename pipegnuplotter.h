@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <thread>
 
 #ifdef WIN32
     #define GNUPLOT_NAME "pgnuplot -persist"
@@ -11,7 +12,14 @@
     #define GNUPLOT_NAME "gnuplot"
 #endif
 
+void __wait() {
+    std::cin.clear();
+    std::cin.ignore(std::cin.rdbuf()->in_avail());
+    std::cin.get();
+}
+
 namespace PipeGnuplotter {
+
     void scatter3d(std::string file_name) {
         #ifdef WIN32
             FILE *pipe = _popen(GNUPLOT_NAME, "w");
@@ -29,9 +37,7 @@ namespace PipeGnuplotter {
             // fprintf(pipe, "%s\n", "e");
             fflush(pipe);
 
-            std::cin.clear();
-            std::cin.ignore(std::cin.rdbuf()->in_avail());
-            std::cin.get();
+            __wait();
 
             #ifdef WIN32
                 _pclose(pipe);
@@ -59,9 +65,7 @@ namespace PipeGnuplotter {
             // fprintf(pipe, "%s\n", "e");
             fflush(pipe);
 
-            std::cin.clear();
-            std::cin.ignore(std::cin.rdbuf()->in_avail());
-            std::cin.get();
+            __wait();
 
             #ifdef WIN32
                 _pclose(pipe);
@@ -70,6 +74,19 @@ namespace PipeGnuplotter {
             #endif
         }
         return;
+    }
+
+
+    namespace Threaded {
+        std::thread scatter3d(std::string file_name) {
+            std::thread t(PipeGnuplotter::scatter3d, file_name);
+            return t;
+        }
+
+        std::thread plot2d(std::string file_name) {
+            std::thread t(PipeGnuplotter::plot2d, file_name);
+            return t;
+        }
     }
 }
 

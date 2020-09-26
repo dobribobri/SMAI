@@ -14,6 +14,9 @@ Averager::Averager(ABox* _aBox, Dot3D _center, double _height,
               std::tie(xr, yr, zr) = r->rotate(_center);
           }
 
+Averager::~Averager() { }
+
+
 std::vector<Dot3D> Averager::digitize(std::tuple<int, int, int> resolution) {
     Digitizer d;
     return d.digitize(this, std::make_pair(-aBox->PX/2, aBox->PX/2),
@@ -22,10 +25,11 @@ std::vector<Dot3D> Averager::digitize(std::tuple<int, int, int> resolution) {
                       resolution);
 }
 
-void Averager::dump(std::string file_path, std::tuple<int, int, int> resolution) {
+void Averager::dump(std::string file_path, std::tuple<int, int, int> resolution, bool append) {
     clock_t start = clock();
     std::ofstream out;
-    out.open(file_path, std::ios::app);
+    if (append) out.open(file_path, std::ios::app);
+    else out.open(file_path, std::ios::app);
     double x, y, z;
     std::vector<Dot3D> points = this->digitize(resolution);
     for (unsigned int i = 0; i < points.size(); i++) {
@@ -35,7 +39,7 @@ void Averager::dump(std::string file_path, std::tuple<int, int, int> resolution)
         std::tie(r, g, b, a) = this->color;
         out << r << " " << g << " " << b << " " << a << std::endl;
     }
-    out << '\n' << std::endl;
+    out << std::endl;
     out.close();
     clock_t end = clock();
     double seconds = double(end - start) / CLOCKS_PER_SEC;
