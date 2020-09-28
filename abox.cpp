@@ -301,7 +301,7 @@ void ABox::moveStructuralInhomogeneities(std::tuple<double, double, double> v, d
     double x, y, z;
     std::tie(x, y, z) = v;
     x *= t; y *= t; z *= t;
-    this->move(std::make_tuple(x, y, z));
+    this->moveStructuralInhomogeneities(std::make_tuple(x, y, z));
 }
 
 std::vector<std::pair<double, double>> ABox::getBrightnessTemperature(std::vector<double> frequencies, Averager* avr, AttenuationModel* model, double theta) {
@@ -376,7 +376,9 @@ void ABox::dumpSpectrum(std::vector<std::pair<double, double>> spectrum, double 
     out.close();
 }
 
-void ABox::moveFieldsPeriodic(std::tuple<double, double, double> s) {
-
+void ABox::moveFieldsPeriodicX(double s) {
+    this->temperature->movePeriodicX(__i(s));
+    this->pressure->movePeriodicX(__i(s));
+    this->humidity->movePeriodicX(__i(s));
 }
 

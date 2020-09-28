@@ -49,7 +49,7 @@ double** Field::sliceZ(int k) {
     return slice;
 }
 
-void Field::circularPermutationX() {
+void Field::circularPermutationX_right() {
     double** slice = this->sliceX(Nx-1);
     for (int i = Nx - 1; i > 0; i--) {
         for (int j = 0; j < Ny; j++) {
@@ -59,14 +59,28 @@ void Field::circularPermutationX() {
         }
     }
     for (int j = 0; j < Ny; j++) {
-        for (int k = 0; k < Nz; k++) {
-               field[0][j][k] = slice[j][k];
-        }
+        for (int k = 0; k < Nz; k++) field[0][j][k] = slice[j][k];
     }
 }
 
-void Field::movePeriodic(int _i, int _j, int _k) {
-    for (int i = 0; i < Nx; ++i) {
+void Field::circularPermutationX_left() {
+    double** slice = this->sliceX(0);
+    for (int i = 0; i < Nx - 1; i++) {
+        for (int j = 0; j < Ny; j++) {
+            for (int k = 0; k < Nz; k++) {
+                   field[i][j][k] = field[i+1][j][k];
+            }
+        }
+    }
+    for (int j = 0; j < Ny; j++) {
+        for (int k = 0; k < Nz; k++) field[Nx-1][j][k] = slice[j][k];
+    }
+}
 
+void Field::movePeriodicX(int i) {
+    if (i > 0) {
+        for (int q = 0; q < i; q++) this->circularPermutationX_right();
+    } else {
+        for (int q = 0; q < -i; q++) this->circularPermutationX_left();
     }
 }

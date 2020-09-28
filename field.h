@@ -29,9 +29,14 @@ public:
     double** sliceY(int j);
     double** sliceZ(int k);
 
-    void circularPermutationX();
+    void circularPermutationX_right();
+    void circularPermutationX_left();
+    //void circularPermutationY_right();
+    //void circularPermutationY_left();
+    //void circularPermutationZ_right();
+    //void circularPermutationZ_left();
 
-    void movePeriodic(int i, int j = 0, int k = 0);
+    void movePeriodicX(int i);
 
 };
 
