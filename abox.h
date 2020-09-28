@@ -94,9 +94,6 @@ public:
     void moveStructuralInhomogeneities(std::tuple<double, double, double> s);
     void moveStructuralInhomogeneities(std::tuple<double, double, double> v, double t);
 
-    void moveFieldsPeriodicX(double s);
-    void moveFieldsPeriodicX(double v, double t);
-
     std::vector<std::pair<double, double>> getBrightnessTemperature(std::vector<double> frequencies,
                              Averager* avr, AttenuationModel* model, double theta = 0.);
 
@@ -106,6 +103,9 @@ public:
                       std::vector<double> frequency, std::string file_path, bool append = true);
     void dumpSpectrum(std::vector<std::pair<double, double>> spectrum,
                       double frequency, double t, std::string file_path, bool append = true);
+
+    void moveFieldsPeriodicX(double s);
+    void moveFieldsPeriodicX(double v, double t);
 
 };
 

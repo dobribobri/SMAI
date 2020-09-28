@@ -30,7 +30,6 @@ double** Field::sliceX(int i) {
     }
     return slice;
 }
-
 double** Field::sliceY(int j) {
     double** slice = new double* [Nx];
     for (int i = 0; i < Nx; i++) slice[i] = new double [Nz];
@@ -39,7 +38,6 @@ double** Field::sliceY(int j) {
     }
     return slice;
 }
-
 double** Field::sliceZ(int k) {
     double** slice = new double* [Nx];
     for (int i = 0; i < Nx; i++) slice[i] = new double [Ny];

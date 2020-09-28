@@ -13,8 +13,6 @@ ABox::ABox(std::tuple<double, double, double> sizes,
           pressure = new Field("pressure", N);
           humidity = new Field("humidity", N);
           initGrid();
-          setStandardProfiles();
-
           std::function<double(double, Dot3D)> defaultLambda =
                   [](double field_val, Dot3D point){ return field_val; };
           lambdaTemperature = defaultLambda;
@@ -136,10 +134,12 @@ void ABox::applyStructuralInhomogeneities(bool verbose) {
                 for (Inhomogeneity* e: this->inhomogeneities) {
                     progress++;
                     if (e->includesQ(std::make_tuple(x, y, z))) {
-                        x -= e->xi; y -= e->yi; z -= e->zi;
-                        this->temperature->applyLambda(this->lambdaTemperature, std::make_tuple(i, j, k), std::make_tuple(x, y, z));
-                        this->pressure->applyLambda(this->lambdaPressure, std::make_tuple(i, j, k), std::make_tuple(x, y, z));
-                        this->humidity->applyLambda(this->lambdaHumidity, std::make_tuple(i, j, k), std::make_tuple(x, y, z));
+                        this->temperature->applyLambda(this->lambdaTemperature,
+                                                       std::make_tuple(i, j, k), std::make_tuple(x-e->xi, y-e->yi, z-e->zi));
+                        this->pressure->applyLambda(this->lambdaPressure,
+                                                    std::make_tuple(i, j, k), std::make_tuple(x-e->xi, y-e->yi, z-e->zi));
+                        this->humidity->applyLambda(this->lambdaHumidity,
+                                                    std::make_tuple(i, j, k), std::make_tuple(x-e->xi, y-e->yi, z-e->zi));
                         b++;
                     }
                 }
@@ -304,6 +304,12 @@ void ABox::moveStructuralInhomogeneities(std::tuple<double, double, double> v, d
     this->moveStructuralInhomogeneities(std::make_tuple(x, y, z));
 }
 
+void ABox::moveFieldsPeriodicX(double s) {
+    this->temperature->movePeriodicX(__i(s));
+    this->pressure->movePeriodicX(__i(s));
+    this->humidity->movePeriodicX(__i(s));
+}
+
 std::vector<std::pair<double, double>> ABox::getBrightnessTemperature(std::vector<double> frequencies, Averager* avr, AttenuationModel* model, double theta) {
 
     std::vector<double> T = this->getAltitudeProfileTemperature(avr);
@@ -363,7 +369,7 @@ void ABox::dumpSpectrum(std::vector<std::pair<double, double>> spectrum, std::ve
     out.close();
 }
 
-void ABox::dumpSpectrum(std::vector<std::pair<double, double>> spectrum, double frequency, double t, std::string file_path, bool append) {
+void ABox::dumpSpectrum(std::vector<std::pair<double, double> > spectrum, double frequency, double t, std::string file_path, bool append) {
     std::ofstream out;
     if (append) out.open(file_path, std::ios::app);
     else out.open(file_path);
@@ -376,9 +382,5 @@ void ABox::dumpSpectrum(std::vector<std::pair<double, double>> spectrum, double 
     out.close();
 }
 
-void ABox::moveFieldsPeriodicX(double s) {
-    this->temperature->movePeriodicX(__i(s));
-    this->pressure->movePeriodicX(__i(s));
-    this->humidity->movePeriodicX(__i(s));
-}
+
 

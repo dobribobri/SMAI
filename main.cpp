@@ -28,13 +28,11 @@ int main(int argc, char *argv[])
     double Nx = 100*2, Ny = 50*2, Nz = 21*2;
     double l0 = 0.1 / s, L0 = 500 / s;
     int numberInhomogeneities = 1000;
-    double fA = 10;
-//    double Crho = 1;
+    double fA = 10.;
     unsigned int seed = 42;
     double T0 = 19.65;
     double P0 = 755.66 * 1.333;
     double rho0 = 10.57;
-
 
     std::srand(seed);
     std::default_random_engine g;
@@ -51,16 +49,15 @@ int main(int argc, char *argv[])
 
     AttenuationModel* model = new P676();
 
+
     ab->setStandardProfiles(T0, P0, rho0);
 
     ab->createStructuralInhomogeneities(numberInhomogeneities, false);
 
     ab->setLambdaHumidity([&](double rho, Dot3D point)
     /* mutable */ {
-        std::tie(std::ignore, std::ignore, std::ignore) = point;
         return rho - fluctuation(g);
     });
-
 
     std::string tmp00 = "tmp00.txt";
     std::string tmp01 = "tmp01.txt";
@@ -71,13 +68,14 @@ int main(int argc, char *argv[])
 
     ab->dumpInhomogeneities(tmp00);
     averager->dump(tmp00);
-    std::thread t0 = PipeGnuplotter::Threaded::scatter3d(tmp00);
+    //std::thread t0 = PipeGnuplotter::Threaded::scatter3d(tmp00);
 
+    ab->setStandardProfiles(T0, P0, rho0);
 
     ab->applyStructuralInhomogeneities(false);
 
-    for (int k = 0; k < 100; k++) {
-        std::cout << "Номер итерации: " << k << std::endl;
+    for (int k = 0; k < 10; k++) {
+        std::cout << "Iteration: " << k+1 << std::endl;
         double time_step = 11.;
 
         Profile hum = ab->getAltitudeProfileHumidity(averager);
@@ -86,13 +84,14 @@ int main(int argc, char *argv[])
         Spectrum brTemp = ab->getBrightnessTemperature(linspace(18.0, 27.2, 47), averager, model, 51);
         ab->dumpSpectrum(brTemp, 22.2, k*time_step, tmp02);
 
-        ab->moveFieldsPeriodic(std::make_tuple(10./s, 0, 0), time_step);
+        //ab->moveStructuralInhomogeneities(std::make_tuple(10./s, 0, 0), time_step);
+        ab->moveFieldsPeriodicX(10./s*time_step);
     }
 
     std::thread t1 = PipeGnuplotter::Threaded::plot2d(tmp01);
     PipeGnuplotter::plot2d(tmp02);
 
-    t0.join();
+    //t0.join();
     t1.join();
 
     exit(0);
