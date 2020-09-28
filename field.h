@@ -25,6 +25,14 @@ public:
     void applyLambda(std::function<double(double, Dot3D)> lambda,
                      std::tuple<int, int, int> indexes, Dot3D point);
 
+    double** sliceX(int i);
+    double** sliceY(int j);
+    double** sliceZ(int k);
+
+    void circularPermutationX();
+
+    void movePeriodic(int i, int j = 0, int k = 0);
+
 };
 
 #endif // FIELD_H

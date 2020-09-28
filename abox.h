@@ -91,8 +91,11 @@ public:
                              std::tuple<int, int, int> resolution = std::make_tuple(10, 10, 10),
                              bool append = true);
 
-    void move(std::tuple<double, double, double> s);
-    void move(std::tuple<double, double, double> v, double t);
+    void moveStructuralInhomogeneities(std::tuple<double, double, double> s);
+    void moveStructuralInhomogeneities(std::tuple<double, double, double> v, double t);
+
+    void moveFieldsPeriodic(std::tuple<double, double, double> s);
+    void moveFieldsPeriodic(std::tuple<double, double, double> v, double t);
 
     std::vector<std::pair<double, double>> getBrightnessTemperature(std::vector<double> frequencies,
                              Averager* avr, AttenuationModel* model, double theta = 0.);
