@@ -3,6 +3,18 @@
 #include "averager.h"
 #include "inhomogeneity.h"
 
+void remember(Spectrum spectrum, Timestamp time, MDATA* DATA) {
+    for (std::pair<Frequency, double> peak : spectrum) {
+        Frequency freq;
+        double val;
+        std::tie(freq, val) = peak;
+        for (std::pair<Frequency, TimeSeries> item : *DATA) {
+            //TBD
+        }
+    }
+}
+
+
 ABox::ABox(std::tuple<double, double, double> sizes,
            std::tuple<int, int, int> N,
            std::pair<double, double> inertial_interval) {
@@ -14,7 +26,10 @@ ABox::ABox(std::tuple<double, double, double> sizes,
           humidity = new Field("humidity", N);
           initGrid();
           std::function<double(double, Dot3D)> defaultLambda =
-                  [](double field_val, Dot3D point){ return field_val; };
+                  [](double field_val, Dot3D point){
+              std::tie(std::ignore, std::ignore, std::ignore) = point;
+              return field_val;
+          };
           lambdaTemperature = defaultLambda;
           lambdaPressure = defaultLambda;
           lambdaHumidity = defaultLambda;
@@ -156,18 +171,18 @@ void ABox::applyStructuralInhomogeneities(bool verbose) {
     std::cout << green << "ABox.applyStructuralInhomogeneities(..)\t-\t" << seconds << " sec." << def << std::endl;
 }
 
-std::vector<double> ABox::getAltitudeProfileTemperature(int i, int j) {
+Profile ABox::getAltitudeProfileTemperature(int i, int j) {
     std::vector<double> profile;
     for (int k = 0; k < Nz; k++)
         profile.push_back(this->temperature->field[i][j][k]);
     return profile;
 }
 
-std::vector<double> ABox::getAltitudeProfileTemperature(double x, double y) {
+Profile ABox::getAltitudeProfileTemperature(double x, double y) {
     return getAltitudeProfileTemperature(__i(x), __j(y));
 }
 
-std::vector<double> ABox::getAltitudeProfileTemperature(Averager *avr) {
+Profile ABox::getAltitudeProfileTemperature(Averager *avr) {
     std::vector<double> profile;
     for (int k = 0; k < Nz; k++) {
         double val = 0.; int count = 0;
@@ -184,18 +199,18 @@ std::vector<double> ABox::getAltitudeProfileTemperature(Averager *avr) {
     return profile;
 }
 
-std::vector<double> ABox::getAltitudeProfilePressure(int i, int j) {
+Profile ABox::getAltitudeProfilePressure(int i, int j) {
     std::vector<double> profile;
     for (int k = 0; k < Nz; k++)
         profile.push_back(this->pressure->field[i][j][k]);
     return profile;
 }
 
-std::vector<double> ABox::getAltitudeProfilePressure(double x, double y) {
+Profile ABox::getAltitudeProfilePressure(double x, double y) {
     return getAltitudeProfilePressure(__i(x), __j(y));
 }
 
-std::vector<double> ABox::getAltitudeProfilePressure(Averager *avr) {
+Profile ABox::getAltitudeProfilePressure(Averager *avr) {
     std::vector<double> profile;
     for (int k = 0; k < Nz; k++) {
         double val = 0.; int count = 0;
@@ -212,18 +227,18 @@ std::vector<double> ABox::getAltitudeProfilePressure(Averager *avr) {
     return profile;
 }
 
-std::vector<double> ABox::getAltitudeProfileHumidity(int i, int j) {
+Profile ABox::getAltitudeProfileHumidity(int i, int j) {
     std::vector<double> profile;
     for (int k = 0; k < Nz; k++)
         profile.push_back(this->humidity->field[i][j][k]);
     return profile;
 }
 
-std::vector<double> ABox::getAltitudeProfileHumidity(double x, double y) {
+Profile ABox::getAltitudeProfileHumidity(double x, double y) {
     return getAltitudeProfileHumidity(__i(x), __j(y));
 }
 
-std::vector<double> ABox::getAltitudeProfileHumidity(Averager *avr) {
+Profile ABox::getAltitudeProfileHumidity(Averager *avr) {
     clock_t start = clock();
     std::vector<double> profile;
     for (int k = 0; k < Nz; k++) {
@@ -246,7 +261,7 @@ std::vector<double> ABox::getAltitudeProfileHumidity(Averager *avr) {
     return profile;
 }
 
-void ABox::dumpAltitudeProfile(std::vector<double> profile, std::string file_path, bool append) {
+void ABox::dumpAltitudeProfile(Profile profile, std::string file_path, bool append) {
     std::ofstream out;
     if (append) out.open(file_path, std::ios::app);
     else out.open(file_path);
@@ -305,13 +320,14 @@ void ABox::moveStructuralInhomogeneities(std::tuple<double, double, double> v, d
 }
 
 void ABox::moveFieldsPeriodicX(double s) {
-    this->temperature->movePeriodicX(__i(s));
-    this->pressure->movePeriodicX(__i(s));
-    this->humidity->movePeriodicX(__i(s));
+    int i = __i(s) % __i(Nx-1);
+    this->temperature->movePeriodicX(i);
+    this->pressure->movePeriodicX(i);
+    this->humidity->movePeriodicX(i);
 }
 
-std::vector<std::pair<double, double>> ABox::getBrightnessTemperature(std::vector<double> frequencies, Averager* avr, AttenuationModel* model, double theta) {
-
+Spectrum ABox::getBrightnessTemperature(std::vector<double> frequencies,
+                                        Averager* avr, AttenuationModel* model, double theta) {
     std::vector<double> T = this->getAltitudeProfileTemperature(avr);
     std::vector<double> P = this->getAltitudeProfilePressure(avr);
     std::vector<double> Rho = this->getAltitudeProfileHumidity(avr);
@@ -341,7 +357,7 @@ std::vector<std::pair<double, double>> ABox::getBrightnessTemperature(std::vecto
     return res;
 }
 
-void ABox::dumpSpectrum(std::vector<std::pair<double, double>> spectrum, std::string file_path, bool append) {
+void ABox::dumpSpectrum(Spectrum spectrum, std::string file_path, bool append) {
     std::ofstream out;
     if (append) out.open(file_path, std::ios::app);
     else out.open(file_path);
@@ -354,7 +370,7 @@ void ABox::dumpSpectrum(std::vector<std::pair<double, double>> spectrum, std::st
     out.close();
 }
 
-void ABox::dumpSpectrum(std::vector<std::pair<double, double>> spectrum, std::vector<double> frequencies, std::string file_path, bool append) {
+void ABox::dumpSpectrum(Spectrum spectrum, std::vector<double> frequencies, std::string file_path, bool append) {
     std::ofstream out;
     if (append) out.open(file_path, std::ios::app);
     else out.open(file_path);
@@ -369,7 +385,7 @@ void ABox::dumpSpectrum(std::vector<std::pair<double, double>> spectrum, std::ve
     out.close();
 }
 
-void ABox::dumpSpectrum(std::vector<std::pair<double, double> > spectrum, double frequency, double t, std::string file_path, bool append) {
+void ABox::dumpSpectrum(Spectrum spectrum, double frequency, double t, std::string file_path, bool append) {
     std::ofstream out;
     if (append) out.open(file_path, std::ios::app);
     else out.open(file_path);

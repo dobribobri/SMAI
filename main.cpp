@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
 
     ab->setLambdaHumidity([&](double rho, Dot3D point)
     /* mutable */ {
+        std::tie(std::ignore, std::ignore, std::ignore) = point;
         return rho - fluctuation(g);
     });
 
@@ -74,15 +75,15 @@ int main(int argc, char *argv[])
 
     ab->applyStructuralInhomogeneities(false);
 
-    for (int k = 0; k < 10; k++) {
+    for (int k = 0; k < 100; k++) {
         std::cout << "Iteration: " << k+1 << std::endl;
         double time_step = 11.;
 
         Profile hum = ab->getAltitudeProfileHumidity(averager);
         ab->dumpAltitudeProfile(hum, tmp01);
 
-        Spectrum brTemp = ab->getBrightnessTemperature(linspace(18.0, 27.2, 47), averager, model, 51);
-        ab->dumpSpectrum(brTemp, 22.2, k*time_step, tmp02);
+        Spectrum brTemp_k = ab->getBrightnessTemperature(linspace(18.0, 27.2, 47), averager, model, 51);
+        ab->dumpSpectrum(brTemp_k, 22.2, k*time_step, tmp02);
 
         //ab->moveStructuralInhomogeneities(std::make_tuple(10./s, 0, 0), time_step);
         ab->moveFieldsPeriodicX(10./s*time_step);

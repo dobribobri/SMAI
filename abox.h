@@ -2,8 +2,6 @@
 #define ABOX_H
 
 #define Dot3D std::tuple<double, double, double>
-#define Profile std::vector<double>
-#define Spectrum std::vector<std::pair<double, double>>
 
 #include "field.h"
 #include "attenuationmodel.h"
@@ -17,6 +15,16 @@
 #include <time.h>
 #include <math.h>
 #include <string>
+
+typedef std::vector<double> Profile;
+typedef double Frequency;
+typedef std::vector<std::pair<Frequency, double>> Spectrum;
+typedef double Timestamp;
+typedef std::vector<std::pair<Timestamp, double>> TimeSeries;
+typedef std::vector<std::pair<Frequency, TimeSeries>> MDATA;
+
+
+void remember(Spectrum, Timestamp, MDATA*);
 
 
 class Inhomogeneity;
@@ -71,19 +79,19 @@ public:
 
     void applyStructuralInhomogeneities(bool verbose = true);
 
-    std::vector<double> getAltitudeProfileTemperature(int i, int j);
-    std::vector<double> getAltitudeProfileTemperature(double x, double y);
-    std::vector<double> getAltitudeProfileTemperature(Averager* avr);
+    Profile getAltitudeProfileTemperature(int i, int j);
+    Profile getAltitudeProfileTemperature(double x, double y);
+    Profile getAltitudeProfileTemperature(Averager* avr);
 
-    std::vector<double> getAltitudeProfilePressure(int i, int j);
-    std::vector<double> getAltitudeProfilePressure(double x, double y);
-    std::vector<double> getAltitudeProfilePressure(Averager* avr);
+    Profile getAltitudeProfilePressure(int i, int j);
+    Profile getAltitudeProfilePressure(double x, double y);
+    Profile getAltitudeProfilePressure(Averager* avr);
 
-    std::vector<double> getAltitudeProfileHumidity(int i, int j);
-    std::vector<double> getAltitudeProfileHumidity(double x, double y);
-    std::vector<double> getAltitudeProfileHumidity(Averager* avr);
+    Profile getAltitudeProfileHumidity(int i, int j);
+    Profile getAltitudeProfileHumidity(double x, double y);
+    Profile getAltitudeProfileHumidity(Averager* avr);
 
-    void dumpAltitudeProfile(std::vector<double> profile, std::string file_path, bool append = true);
+    void dumpAltitudeProfile(Profile profile, std::string file_path, bool append = true);
 
     Inhomogeneity* findInhomogeneity(int number);
 
@@ -94,14 +102,14 @@ public:
     void moveStructuralInhomogeneities(std::tuple<double, double, double> s);
     void moveStructuralInhomogeneities(std::tuple<double, double, double> v, double t);
 
-    std::vector<std::pair<double, double>> getBrightnessTemperature(std::vector<double> frequencies,
+    Spectrum getBrightnessTemperature(std::vector<double> frequencies,
                              Averager* avr, AttenuationModel* model, double theta = 0.);
 
-    void dumpSpectrum(std::vector<std::pair<double, double>> spectrum,
+    void dumpSpectrum(Spectrum spectrum,
                       std::string file_path, bool append = true);
-    void dumpSpectrum(std::vector<std::pair<double, double>> spectrum,
+    void dumpSpectrum(Spectrum spectrum,
                       std::vector<double> frequency, std::string file_path, bool append = true);
-    void dumpSpectrum(std::vector<std::pair<double, double>> spectrum,
+    void dumpSpectrum(Spectrum spectrum,
                       double frequency, double t, std::string file_path, bool append = true);
 
     void moveFieldsPeriodicX(double s);

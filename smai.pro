@@ -24,7 +24,8 @@ SOURCES += \
         digitizer.cpp \
         field.cpp \
         inhomogeneity.cpp \
-        main.cpp
+        main.cpp \
+    structuralfunction.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -42,7 +43,8 @@ HEADERS += \
     linspace.h \
     pipegnuplotter.h \
     plotter.h \
-    rotation.h
+    rotation.h \
+    structuralfunction.h
 
 DISTFILES += \
     plotter.py
