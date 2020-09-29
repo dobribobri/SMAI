@@ -25,6 +25,7 @@ SOURCES += \
         field.cpp \
         inhomogeneity.cpp \
         main.cpp \
+    measurement.cpp \
     structuralfunction.cpp
 
 # Default rules for deployment.
@@ -41,10 +42,11 @@ HEADERS += \
     field.h \
     inhomogeneity.h \
     linspace.h \
+    measurement.h \
     pipegnuplotter.h \
-    plotter.h \
+    # plotter.h \
     rotation.h \
     structuralfunction.h
 
-DISTFILES += \
-    plotter.py
+# DISTFILES += \
+#    plotter.py

@@ -1,3 +1,5 @@
+#include "inhomogeneity.h"
+#include "averager.h"
 #include "digitizer.h"
 #include "linspace.h"
 

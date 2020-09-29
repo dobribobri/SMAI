@@ -11,8 +11,10 @@
 #include "abox.h"
 #include "averager.h"
 #include "pipegnuplotter.h"
-//#include "plotter.h"
 #include "linspace.h"
+#include "attenuationmodel.h"
+#include "structuralfunction.h"
+#include "measurement.h"
 
 
 int main(int argc, char *argv[])
@@ -69,13 +71,15 @@ int main(int argc, char *argv[])
 
     ab->dumpInhomogeneities(tmp00);
     averager->dump(tmp00);
-    //std::thread t0 = PipeGnuplotter::Threaded::scatter3d(tmp00);
+    std::thread t0 = PipeGnuplotter::Threaded::scatter3d(tmp00);
 
     ab->setStandardProfiles(T0, P0, rho0);
 
     ab->applyStructuralInhomogeneities(false);
 
-    for (int k = 0; k < 100; k++) {
+    MDATA TBDATA;
+
+    for (int k = 0; k < 10; k++) {
         std::cout << "Iteration: " << k+1 << std::endl;
         double time_step = 11.;
 
@@ -83,17 +87,24 @@ int main(int argc, char *argv[])
         ab->dumpAltitudeProfile(hum, tmp01);
 
         Spectrum brTemp_k = ab->getBrightnessTemperature(linspace(18.0, 27.2, 47), averager, model, 51);
-        ab->dumpSpectrum(brTemp_k, 22.2, k*time_step, tmp02);
+        dumpSpectrum(brTemp_k, 22.2, k*time_step, tmp02);
+
+        remember(brTemp_k, k*time_step, &TBDATA);
 
         //ab->moveStructuralInhomogeneities(std::make_tuple(10./s, 0, 0), time_step);
         ab->moveFieldsPeriodicX(10./s*time_step);
     }
 
     std::thread t1 = PipeGnuplotter::Threaded::plot2d(tmp01);
-    PipeGnuplotter::plot2d(tmp02);
+    std::thread t2 = PipeGnuplotter::Threaded::plot2d(tmp02);
 
-    //t0.join();
+
+    MDATA SFDATA = structuralFunctions(TBDATA);
+
+
+    t0.join();
     t1.join();
+    t2.join();
 
     exit(0);
 

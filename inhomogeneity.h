@@ -4,11 +4,12 @@
 #define Dot3D std::tuple<double, double, double>
 #define TColor std::tuple<float, float, float, float>
 
-#include "abox.h"
 #include <tuple>
 #include <vector>
 #include <iostream>
 
+
+class ABox;
 
 class Inhomogeneity
 {

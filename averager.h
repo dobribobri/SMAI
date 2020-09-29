@@ -5,7 +5,6 @@
 #define TColor std::tuple<float, float, float, float>
 #define crimson std::make_tuple(220./255., 20./255., 60./255., 0.05)
 
-#include "rotation.h"
 #include <tuple>
 #include <vector>
 #include <utility>
@@ -16,6 +15,7 @@
 
 class ABox;
 
+class Rotation;
 
 class Averager
 {

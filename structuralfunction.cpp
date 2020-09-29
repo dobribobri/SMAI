@@ -1,6 +1,7 @@
 #include "structuralfunction.h"
 #include <math.h>
 
+
 TimeSeries structuralFunction(TimeSeries xi, double part, double rightLimit) {
     int nsize = int(xi.size());
     double t0, t1, dt_avg = 0.;
@@ -28,14 +29,13 @@ TimeSeries structuralFunction(TimeSeries xi, double part, double rightLimit) {
 }
 
 MDATA structuralFunctions(MDATA DATA, double part, double rightShowLimit) {
-    std::vector<std::pair<Frequency, TimeSeries>> out;
-    for (unsigned int i = 0; i < DATA.size(); i++) {
-        Frequency freq;
-        TimeSeries series;
-        std::tie(freq, series) = DATA[i];
-        series = structuralFunction(series, part, rightShowLimit);
-        out.push_back(std::make_pair(freq, series));
-    }
+    std::map<Frequency, TimeSeries> out = DATA;
+    for (MDATA::iterator it = out.begin(); it != out.end(); it++)
+        it->second = structuralFunction(it->second, part, rightShowLimit);
     return out;
 }
 
+void structuralFunctions(MDATA* DATA, double part, double rightShowLimit) {
+    for (MDATA::iterator it = DATA->begin(); it != DATA->end(); it++)
+        it->second = structuralFunction(it->second, part, rightShowLimit);
+}

@@ -1,3 +1,4 @@
+#include "abox.h"
 #include "inhomogeneity.h"
 #include "digitizer.h"
 #include "colormod.h"

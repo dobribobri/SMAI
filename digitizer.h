@@ -3,12 +3,14 @@
 
 #define Dot3D std::tuple<double, double, double>
 
-#include "inhomogeneity.h"
-#include "averager.h"
 #include <vector>
 #include <tuple>
 #include <utility>
 #include <functional>
+
+class Inhomogeneity;
+
+class Averager;
 
 class Digitizer
 {

@@ -2,17 +2,8 @@
 #include "colormod.h"
 #include "averager.h"
 #include "inhomogeneity.h"
-
-void remember(Spectrum spectrum, Timestamp time, MDATA* DATA) {
-    for (std::pair<Frequency, double> peak : spectrum) {
-        Frequency freq;
-        double val;
-        std::tie(freq, val) = peak;
-        for (std::pair<Frequency, TimeSeries> item : *DATA) {
-            //TBD
-        }
-    }
-}
+#include "field.h"
+#include "attenuationmodel.h"
 
 
 ABox::ABox(std::tuple<double, double, double> sizes,
@@ -356,47 +347,3 @@ Spectrum ABox::getBrightnessTemperature(std::vector<double> frequencies,
     }
     return res;
 }
-
-void ABox::dumpSpectrum(Spectrum spectrum, std::string file_path, bool append) {
-    std::ofstream out;
-    if (append) out.open(file_path, std::ios::app);
-    else out.open(file_path);
-    for (unsigned int k = 0; k < spectrum.size(); k++) {
-        double freq, val;
-        std::tie(freq, val) = spectrum[k];
-        out << freq << " " << val << std::endl;
-    }
-    out << std::endl;
-    out.close();
-}
-
-void ABox::dumpSpectrum(Spectrum spectrum, std::vector<double> frequencies, std::string file_path, bool append) {
-    std::ofstream out;
-    if (append) out.open(file_path, std::ios::app);
-    else out.open(file_path);
-    for (unsigned int k = 0; k < spectrum.size(); k++) {
-        double freq, val;
-        std::tie(freq, val) = spectrum[k];
-        for (unsigned int i = 0; i < frequencies.size(); i++)
-            if (abs(freq - frequencies[i]) < 0.00001)
-                out << freq << " " << val << std::endl;
-    }
-    out << std::endl;
-    out.close();
-}
-
-void ABox::dumpSpectrum(Spectrum spectrum, double frequency, double t, std::string file_path, bool append) {
-    std::ofstream out;
-    if (append) out.open(file_path, std::ios::app);
-    else out.open(file_path);
-    for (unsigned int k = 0; k < spectrum.size(); k++) {
-        double freq, val;
-        std::tie(freq, val) = spectrum[k];
-        if (abs(freq - frequency) < 0.00001)
-             out << t << " " << val << std::endl;
-    }
-    out.close();
-}
-
-
-

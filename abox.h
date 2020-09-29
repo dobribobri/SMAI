@@ -2,9 +2,8 @@
 #define ABOX_H
 
 #define Dot3D std::tuple<double, double, double>
+#define FREQ_EPS 0.00001
 
-#include "field.h"
-#include "attenuationmodel.h"
 #include <iostream>
 #include <vector>
 #include <fstream>
@@ -15,21 +14,20 @@
 #include <time.h>
 #include <math.h>
 #include <string>
+#include <map>
 
 typedef std::vector<double> Profile;
 typedef double Frequency;
 typedef std::vector<std::pair<Frequency, double>> Spectrum;
-typedef double Timestamp;
-typedef std::vector<std::pair<Timestamp, double>> TimeSeries;
-typedef std::vector<std::pair<Frequency, TimeSeries>> MDATA;
-
-
-void remember(Spectrum, Timestamp, MDATA*);
 
 
 class Inhomogeneity;
 
+class Field;
+
 class Averager;
+
+class AttenuationModel;
 
 class ABox
 {
@@ -104,13 +102,6 @@ public:
 
     Spectrum getBrightnessTemperature(std::vector<double> frequencies,
                              Averager* avr, AttenuationModel* model, double theta = 0.);
-
-    void dumpSpectrum(Spectrum spectrum,
-                      std::string file_path, bool append = true);
-    void dumpSpectrum(Spectrum spectrum,
-                      std::vector<double> frequency, std::string file_path, bool append = true);
-    void dumpSpectrum(Spectrum spectrum,
-                      double frequency, double t, std::string file_path, bool append = true);
 
     void moveFieldsPeriodicX(double s);
     void moveFieldsPeriodicX(double v, double t);

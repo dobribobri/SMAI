@@ -2,6 +2,8 @@
 #include "abox.h"
 #include "digitizer.h"
 #include "colormod.h"
+#include "rotation.h"
+
 
 Averager::Averager(ABox* _aBox, Dot3D _center, double _height,
                    std::tuple<double, double, double> _rotation,
