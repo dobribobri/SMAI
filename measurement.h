@@ -3,6 +3,7 @@
 
 #define FREQ_EPS 0.00001
 
+#include <iostream>
 #include <fstream>
 #include <vector>
 #include <utility>
@@ -25,6 +26,16 @@ void dumpSpectrum(Spectrum spectrum, std::vector<Frequency> frequencies,
                   std::string file_path, bool append = true);
 void dumpSpectrum(Spectrum spectrum, Frequency frequency, Timestamp t,
                   std::string file_path, bool append = true);
+//TBD
+
+void dumpTimeSeries(TimeSeries series, std::ofstream& out);
+void dumpTimeSeries(TimeSeries series, std::string file_path, bool append = true);
+
+void dumpMDATA(MDATA* DATA, std::string file_path, bool tabular = true, bool titled = false);
+//void dumpMDATA(MDATA* DATA, std::vector<Frequency> frequencies,
+//               std::string file_path, bool tabular = true, bool titled = false);
+
+std::vector<Frequency> getKeys(MDATA* MDATA);
 
 
 

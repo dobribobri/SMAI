@@ -65,13 +65,17 @@ int main(int argc, char *argv[])
     std::string tmp00 = "tmp00.txt";
     std::string tmp01 = "tmp01.txt";
     std::string tmp02 = "tmp02.txt";
+    std::string tmp_tbdata = "tmp_tbdata.txt";
+    std::string tmp_sfdata = "tmp_sfdata.txt";
     std::remove(tmp00.c_str());
     std::remove(tmp01.c_str());
     std::remove(tmp02.c_str());
+    std::remove(tmp_tbdata.c_str());
+    std::remove(tmp_sfdata.c_str());
 
     ab->dumpInhomogeneities(tmp00);
     averager->dump(tmp00);
-    std::thread t0 = PipeGnuplotter::Threaded::scatter3d(tmp00);
+    //std::thread t0 = PipeGnuplotter::Threaded::scatter3d(tmp00);
 
     ab->setStandardProfiles(T0, P0, rho0);
 
@@ -86,7 +90,9 @@ int main(int argc, char *argv[])
         Profile hum = ab->getAltitudeProfileHumidity(averager);
         ab->dumpAltitudeProfile(hum, tmp01);
 
-        Spectrum brTemp_k = ab->getBrightnessTemperature(linspace(18.0, 27.2, 47), averager, model, 51);
+        //std::vector<Frequency> freqs = linspace(18.0, 27.2, 47);
+        std::vector<Frequency> freqs = {18.0, 19.4, 21.6, 22.2, 25.0, 27.2};
+        Spectrum brTemp_k = ab->getBrightnessTemperature(freqs, averager, model, 51);
         dumpSpectrum(brTemp_k, 22.2, k*time_step, tmp02);
 
         remember(brTemp_k, k*time_step, &TBDATA);
@@ -98,13 +104,21 @@ int main(int argc, char *argv[])
     std::thread t1 = PipeGnuplotter::Threaded::plot2d(tmp01);
     std::thread t2 = PipeGnuplotter::Threaded::plot2d(tmp02);
 
+    dumpMDATA(&TBDATA, tmp_tbdata);
+    std::thread tbplot = PipeGnuplotter::Threaded::plot2d(tmp_tbdata,
+                                         PipeGnuplotter::Palette::set_style_commands);
 
     MDATA SFDATA = structuralFunctions(TBDATA);
 
+    dumpMDATA(&SFDATA, tmp_sfdata);
+    std::thread sfplot = PipeGnuplotter::Threaded::plot2d(tmp_sfdata,
+                                         PipeGnuplotter::Palette::set_style_commands);
 
-    t0.join();
+    //t0.join();
     t1.join();
     t2.join();
+    tbplot.join();
+    sfplot.join();
 
     exit(0);
 

@@ -100,7 +100,7 @@ public:
     void moveStructuralInhomogeneities(std::tuple<double, double, double> s);
     void moveStructuralInhomogeneities(std::tuple<double, double, double> v, double t);
 
-    Spectrum getBrightnessTemperature(std::vector<double> frequencies,
+    Spectrum getBrightnessTemperature(std::vector<Frequency> frequencies,
                              Averager* avr, AttenuationModel* model, double theta = 0.);
 
     void moveFieldsPeriodicX(double s);

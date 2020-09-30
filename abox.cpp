@@ -317,7 +317,7 @@ void ABox::moveFieldsPeriodicX(double s) {
     this->humidity->movePeriodicX(i);
 }
 
-Spectrum ABox::getBrightnessTemperature(std::vector<double> frequencies,
+Spectrum ABox::getBrightnessTemperature(std::vector<Frequency> frequencies,
                                         Averager* avr, AttenuationModel* model, double theta) {
     std::vector<double> T = this->getAltitudeProfileTemperature(avr);
     std::vector<double> P = this->getAltitudeProfilePressure(avr);
