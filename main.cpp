@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
                                           1.25*PZ, 0.148492, 0.148492, 1,
                                           std::make_tuple(0, -51, 0));
 
-    AttenuationModel* model = new P676();
+    AttenuationModel* model = new KP676();
 
 
     ab->setStandardProfiles(T0, P0, rho0);

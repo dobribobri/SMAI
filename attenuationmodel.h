@@ -15,10 +15,13 @@ class AttenuationModel {
         AttenuationModel();
 
         virtual double gammaOxygen(double f, double temperature, double pressure) = 0;
+        virtual double tauOxygen(double f, double temperature, double pressure) = 0;
 
         virtual double gammaWVapor(double f, double temperature, double pressure, double humidity) = 0;
+        virtual double tauWVapor(double f, double temperature, double pressure, double humidity) = 0;
 
         virtual double gammaLWater(double f, double tcl) = 0;
+        virtual double tauLWater(double f, double tcl) = 0;
 
         virtual double opacity(double brT, double Tavg) = 0;
 
