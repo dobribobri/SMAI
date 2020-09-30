@@ -328,7 +328,7 @@ Spectrum ABox::getBrightnessTemperature(std::vector<Frequency> frequencies,
         double f = frequencies[unsigned(i)], t = T[unsigned(k)], p = P[unsigned(k)], rho = Rho[unsigned(k)];
         double ox = model->gammaOxygen(f, t, p);
         double wv = model->gammaWVapor(f, t, p, rho);
-        return (ox + wv) / cos(theta * M_PI / 180) * model->dB2np;
+        return (ox + wv) / cos(theta * M_PI / 180) * dB2np;
     };
     std::function<double(int, int)> Igamma = [&dh,gamma](int i, int H){
         if (H == 0) return 0.;

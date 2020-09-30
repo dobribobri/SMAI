@@ -69,6 +69,7 @@ namespace PipeGnuplotter {
         return;
     }
 
+    //TBD
     void _plot2d(std::string file_name) {
         #ifdef WIN32
             FILE *pipe = _popen(GNUPLOT_NAME, "w");

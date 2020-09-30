@@ -5,9 +5,9 @@ AttenuationModel::AttenuationModel() { }
 AttenuationModel::~AttenuationModel() { }
 
 
-P676::P676() { }
+KP676::KP676() { }
 
-double P676::gammaOxygen(double f, double T, double P) {
+double KP676::gammaOxygen(double f, double T, double P) {
     double rt = 288 / (273 + T);
     double rp = P / 1013;
     double gamma = 0.;
@@ -27,7 +27,7 @@ double P676::gammaOxygen(double f, double T, double P) {
     return gamma;
 }
 
-double P676::gammaWVapor(double f, double T, double P, double rho) {
+double KP676::gammaWVapor(double f, double T, double P, double rho) {
     double rt = 288 / (273 + T);
     double rp = P / 1013;
     double gamma = 0.;
@@ -40,4 +40,29 @@ double P676::gammaWVapor(double f, double T, double P, double rho) {
                  4.01 * rt / ((f - 325.153)*(f - 325.153) + 10.44 * rp * rp * rt)) *
                  f * f * rho * rp * rt / 10000;
     return gamma;
+}
+
+std::tuple<double, double, double> KP676::epsilon_(double T, double Sw) {
+    double epsO_nosalt = 5.5;
+    double epsS_nosalt = 88.2 - 0.40885 * T + 0.00081 * T * T;
+    double lambdaS_nosalt = 1.8735116 - 0.027296 * T + 0.000136 * T * T + 1.662 * exp(-0.0634 * T);
+    double epsO = epsO_nosalt;
+    double epsS = epsS_nosalt - 17.2 * Sw / 60;
+    double lambdaS = lambdaS_nosalt - 0.206 * Sw / 60;
+    return std::make_tuple(epsO, epsS, lambdaS);
+}
+
+double KP676::gammaLWater(double f, double tcl) {
+    double lambda = C / (f * 1000000000) * 100;
+    double epsO, epsS, lambdaS;
+    std::tie(epsO, epsS, lambdaS) = epsilon_(tcl, 0.);
+    double y = lambdaS / lambda;
+    return (1/dB2np) * 3 * 0.6*M_PI / lambda *
+            (epsS - epsO) * y /
+            ((epsS + 2)*(epsS + 2) +
+             (epsO + 2)*(epsO + 2)*y*y);
+}
+
+double KP676::opacity(double brT, double Tavg) {
+    return -log((brT - Tavg)/(-Tavg));
 }

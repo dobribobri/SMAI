@@ -31,7 +31,7 @@ void dumpSpectrum(Spectrum spectrum, Frequency frequency, Timestamp t,
 void dumpTimeSeries(TimeSeries series, std::ofstream& out);
 void dumpTimeSeries(TimeSeries series, std::string file_path, bool append = true);
 
-void dumpMDATA(MDATA* DATA, std::string file_path, bool tabular = true, bool titled = false);
+void dumpMDATA(MDATA* DATA, std::string file_path, bool tabular = true, bool titled = true);
 //void dumpMDATA(MDATA* DATA, std::vector<Frequency> frequencies,
 //               std::string file_path, bool tabular = true, bool titled = false);
 
