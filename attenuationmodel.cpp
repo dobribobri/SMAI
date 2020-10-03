@@ -5,9 +5,9 @@ AttenuationModel::AttenuationModel() { }
 AttenuationModel::~AttenuationModel() { }
 
 
-KP676::KP676() { }
+P676K::P676K() { }
 
-double KP676::gammaOxygen(double f, double T, double P) {
+double P676K::gammaOxygen(double f, double T, double P) { // dB/km
     double rt = 288 / (273 + T);
     double rp = P / 1013;
     double gamma = 0.;
@@ -27,7 +27,7 @@ double KP676::gammaOxygen(double f, double T, double P) {
     return gamma;
 }
 
-double KP676::gammaWVapor(double f, double T, double P, double rho) {
+double P676K::gammaWVapor(double f, double T, double P, double rho) { // dB/km
     double rt = 288 / (273 + T);
     double rp = P / 1013;
     double gamma = 0.;
@@ -42,7 +42,20 @@ double KP676::gammaWVapor(double f, double T, double P, double rho) {
     return gamma;
 }
 
-std::tuple<double, double, double> KP676::epsilon_(double T, double Sw) {
+double P676K::tauOxygen(double f, double temperature, double pressure, double theta) { // np
+    return dB2np * gammaOxygen(f, temperature, pressure) * H1 / cos(theta * M_PI / 180);
+}
+
+double P676K::tauWVapor(double f, double temperature, double pressure, double humidity, double theta) { // np
+    return dB2np * gammaWVapor(f, temperature, pressure, humidity) * H2 / cos(theta * M_PI / 180);
+}
+
+double P676K::tauClearSky(double f, double temperature, double pressure, double humidity, double theta) { //np
+    return tauOxygen(f, temperature, pressure, theta) +
+            tauWVapor(f, temperature, pressure, humidity, theta);
+}
+
+std::tuple<double, double, double> P676K::epsilon_(double T, double Sw) {
     double epsO_nosalt = 5.5;
     double epsS_nosalt = 88.2 - 0.40885 * T + 0.00081 * T * T;
     double lambdaS_nosalt = 1.8735116 - 0.027296 * T + 0.000136 * T * T + 1.662 * exp(-0.0634 * T);
@@ -52,7 +65,7 @@ std::tuple<double, double, double> KP676::epsilon_(double T, double Sw) {
     return std::make_tuple(epsO, epsS, lambdaS);
 }
 
-double KP676::gammaLWater(double f, double tcl) {
+double P676K::gammaLWater(double f, double tcl) { // dB/km
     double lambda = C / (f * 1000000000) * 100;
     double epsO, epsS, lambdaS;
     std::tie(epsO, epsS, lambdaS) = epsilon_(tcl, 0.);
@@ -63,6 +76,6 @@ double KP676::gammaLWater(double f, double tcl) {
              (epsO + 2)*(epsO + 2)*y*y);
 }
 
-double KP676::opacity(double brT, double Tavg) {
+double P676K::opacity(double brT, double Tavg) { // np
     return -log((brT - Tavg)/(-Tavg));
 }

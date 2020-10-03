@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
                                           1.25*PZ, 0.148492, 0.148492, 1,
                                           std::make_tuple(0, -51, 0));
 
-    AttenuationModel* model = new KP676();
+    AttenuationModel* model = new P676K();
 
 
     ab->setStandardProfiles(T0, P0, rho0);
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 
     ab->dumpInhomogeneities(tmp00);
     averager->dump(tmp00);
-    //std::thread t0 = PipeGnuplotter::Threaded::scatter3d(tmp00);
+    std::thread t0 = PipeGnuplotter::Threaded::scatter3d(tmp00);
 
     ab->setStandardProfiles(T0, P0, rho0);
 
@@ -93,9 +93,9 @@ int main(int argc, char *argv[])
         //std::vector<Frequency> freqs = linspace(18.0, 27.2, 47);
         std::vector<Frequency> freqs = {18.0, 19.4, 21.6, 22.2, 25.0, 27.2};
         Spectrum brTemp_k = ab->getBrightnessTemperature(freqs, averager, model, 51);
-        dumpSpectrum(brTemp_k, 22.2, k*time_step, tmp02);
+        Dump::peak(brTemp_k, 22.2, k*time_step, tmp02);
 
-        remember(brTemp_k, k*time_step, &TBDATA);
+        Measurement::remember(brTemp_k, k*time_step, &TBDATA);
 
         //ab->moveStructuralInhomogeneities(std::make_tuple(10./s, 0, 0), time_step);
         ab->moveFieldsPeriodicX(10./s*time_step);
@@ -104,17 +104,17 @@ int main(int argc, char *argv[])
     std::thread t1 = PipeGnuplotter::Threaded::plot2d(tmp01);
     std::thread t2 = PipeGnuplotter::Threaded::plot2d(tmp02);
 
-    dumpMDATA(&TBDATA, tmp_tbdata);
+    Dump::mData(&TBDATA, tmp_tbdata);
     std::thread tbplot = PipeGnuplotter::Threaded::plot2d(tmp_tbdata,
                                          PipeGnuplotter::Palette::set_style_commands);
 
     MDATA SFDATA = structuralFunctions(TBDATA);
 
-    dumpMDATA(&SFDATA, tmp_sfdata);
+    Dump::mData(&SFDATA, tmp_sfdata);
     std::thread sfplot = PipeGnuplotter::Threaded::plot2d(tmp_sfdata,
                                          PipeGnuplotter::Palette::set_style_commands);
 
-    //t0.join();
+    t0.join();
     t1.join();
     t2.join();
     tbplot.join();

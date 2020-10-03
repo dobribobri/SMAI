@@ -18,24 +18,52 @@ typedef std::vector<std::pair<Timestamp, double>> TimeSeries;
 typedef std::map<Frequency, TimeSeries> MDATA;
 
 
-void remember(Spectrum, Timestamp, MDATA*);
+class Measurement {
+public:
+    MDATA* DATA;
 
-void dumpSpectrum(Spectrum spectrum,
+    Measurement();
+    Measurement(MDATA* _DATA) : DATA(_DATA) { }
+
+    std::vector<Frequency> keys();
+    static std::vector<Frequency> getKeys(MDATA* DATA);
+
+    TimeSeries* getTimeSeries(Frequency f);
+
+    void remember(Spectrum, Timestamp);
+    static void remember(Spectrum, Timestamp, MDATA*);
+
+    void dump(std::string file_path, bool tabular = true, bool titled = true);
+    void dump(std::vector<Frequency> frequencies,
+              std::string file_path, bool tabular = true, bool titled = false);
+    static void dump(MDATA* DATA, std::string file_path, bool tabular = true, bool titled = true);
+    static void dump(MDATA* DATA, std::vector<Frequency> frequencies,
+              std::string file_path, bool tabular = true, bool titled = false);
+
+};
+
+
+namespace Dump {
+
+    void spectrum(Spectrum spectrum,
                   std::string file_path, bool append = true);
-void dumpSpectrum(Spectrum spectrum, std::vector<Frequency> frequencies,
+    void spectrum(Spectrum spectrum, std::vector<Frequency> frequencies,
+                  std::ofstream& out);
+    void spectrum(Spectrum spectrum, std::vector<Frequency> frequencies,
                   std::string file_path, bool append = true);
-void dumpSpectrum(Spectrum spectrum, Frequency frequency, Timestamp t,
-                  std::string file_path, bool append = true);
-//TBD
 
-void dumpTimeSeries(TimeSeries series, std::ofstream& out);
-void dumpTimeSeries(TimeSeries series, std::string file_path, bool append = true);
+    void peak(Spectrum spectrum, Frequency frequency, Timestamp t,
+              std::ofstream& out);
+    void peak(Spectrum spectrum, Frequency frequency, Timestamp t,
+              std::string file_path, bool append = true);
 
-void dumpMDATA(MDATA* DATA, std::string file_path, bool tabular = true, bool titled = true);
-//void dumpMDATA(MDATA* DATA, std::vector<Frequency> frequencies,
-//               std::string file_path, bool tabular = true, bool titled = false);
+    void timeSeries(TimeSeries series, std::ofstream& out);
+    void timeSeries(TimeSeries series, std::string file_path, bool append = true);
 
-std::vector<Frequency> getKeys(MDATA* MDATA);
+    void mData(MDATA* DATA, std::string file_path, bool tabular = true, bool titled = true);
+    void mData(MDATA* DATA, std::vector<Frequency> frequencies,
+                   std::string file_path, bool tabular = true, bool titled = false);
+}
 
 
 
