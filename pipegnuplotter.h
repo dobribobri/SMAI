@@ -21,15 +21,15 @@ void __wait() {
 namespace PipeGnuplotter {
 
     class Palette {
-    public:
-        static std::vector<std::string> set_style_commands;
+        public:
+            static std::vector<std::string> set_style_commands;
 
-        static void initialize(FILE* pipe, std::vector<std::string> set_style_commands) {
-            std::string command = "";
-            for (std::string s : set_style_commands) {
-                fprintf(pipe, "%s", s.c_str());
+            static void initialize(FILE* pipe, std::vector<std::string> set_style_commands) {
+                std::string command = "";
+                for (std::string s : set_style_commands) {
+                    fprintf(pipe, "%s", s.c_str());
+                }
             }
-        }
     };
 
     std::vector<std::string> Palette::set_style_commands = {

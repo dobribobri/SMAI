@@ -15,6 +15,7 @@
 #include <math.h>
 #include <string>
 #include <map>
+#include "colormod.h"
 
 typedef std::vector<double> Profile;
 typedef double Frequency;
@@ -29,82 +30,96 @@ class Averager;
 
 class AttenuationModel;
 
-class ABox
-{
-private:
-    double __x(int i);
-    double __y(int j);
-    double __z(int k);
+class ABox {
+    private:
+        double __x(int i);
+        double __y(int j);
+        double __z(int k);
 
-    int __i(double x);
-    int __j(double y);
-    int __k(double z);
+        int __i(double x);
+        int __j(double y);
+        int __k(double z);
 
-public:
-    double PX, PY, PZ;
-    int Nx, Ny, Nz;
-    double l0, L0;
+        Color::Modifier* fgred = new Color::Modifier(Color::FG_RED);
+        Color::Modifier* fggreen = new Color::Modifier(Color::FG_GREEN);
+        Color::Modifier* fgblue = new Color::Modifier(Color::FG_BLUE);
+        Color::Modifier* fgdef = new Color::Modifier(Color::FG_DEFAULT);
 
-    Field* temperature;
-    Field* pressure;
-    Field* humidity;
+    public:
+        double PX, PY, PZ;
+        int Nx, Ny, Nz;
+        double l0, L0;
 
-    std::vector<Inhomogeneity*> inhomogeneities;
+        Field* temperature;
+        Field* pressure;
+        Field* humidity;
 
-    std::function<double(double, Dot3D)> lambdaTemperature;
-    std::function<double(double, Dot3D)> lambdaPressure;
-    std::function<double(double, Dot3D)> lambdaHumidity;
+        std::vector<Inhomogeneity*> inhomogeneities;
 
-    double T0 = 15., P0 = 1013., rho0 = 7.5;
-    double beta = 6.5, HP = 7.7, Hrho = 2.1;
+        std::function<double(double, Dot3D)> lambdaTemperature;
+        std::function<double(double, Dot3D)> lambdaPressure;
+        std::function<double(double, Dot3D)> lambdaHumidity;
 
-    ABox(std::tuple<double, double, double> sizes,
-         std::tuple<int, int, int> N,
-         std::pair<double, double> inertial_interval);
+        double T0 = 15., P0 = 1013., rho0 = 7.5;
+        double beta = 6.5, HP = 7.7, Hrho = 2.1;
 
-    void initGrid();
+        ABox(std::tuple<double, double, double> sizes,
+             std::tuple<int, int, int> N,
+             std::pair<double, double> inertial_interval);
 
-    void setStandardProfiles(double T0 = 15., double P0 = 1013., double rho0 = 7.5,
-                             double beta = 6.5, double HP = 7.7, double Hrho = 2.1);
+        void initGrid();
 
-    void setLambdaTemperature(const std::function<double(double, Dot3D)> expression);
+        void setStandardProfiles(double T0 = 15., double P0 = 1013., double rho0 = 7.5,
+                                 double beta = 6.5, double HP = 7.7, double Hrho = 2.1);
 
-    void setLambdaPressure(const std::function<double(double, Dot3D)> expression);
+        std::vector<double> xGrid();
+        std::vector<double> yGrid();
+        std::vector<double> zGrid();
+        std::vector<double> grid(std::string axis = "z");
 
-    void setLambdaHumidity(std::function<double(double, Dot3D)> expression);
+        void setLambdaTemperature(const std::function<double(double, Dot3D)> expression);
 
-    void createStructuralInhomogeneities(int amount = 100, bool verbose = true);
+        void setLambdaPressure(const std::function<double(double, Dot3D)> expression);
 
-    void applyStructuralInhomogeneities(bool verbose = true);
+        void setLambdaHumidity(std::function<double(double, Dot3D)> expression);
 
-    Profile getAltitudeProfileTemperature(int i, int j);
-    Profile getAltitudeProfileTemperature(double x, double y);
-    Profile getAltitudeProfileTemperature(Averager* avr);
+        void createStructuralInhomogeneities(int amount = 100, bool verbose = true);
 
-    Profile getAltitudeProfilePressure(int i, int j);
-    Profile getAltitudeProfilePressure(double x, double y);
-    Profile getAltitudeProfilePressure(Averager* avr);
+        void applyStructuralInhomogeneities(bool verbose = true);
 
-    Profile getAltitudeProfileHumidity(int i, int j);
-    Profile getAltitudeProfileHumidity(double x, double y);
-    Profile getAltitudeProfileHumidity(Averager* avr);
+        Profile getAltitudeProfileTemperature(int i, int j);
+        Profile getAltitudeProfileTemperature(double x, double y);
+        Profile getAltitudeProfileTemperature(Averager* avr);
 
-    void dumpAltitudeProfile(Profile profile, std::string file_path, bool append = true);
+        Profile getAltitudeProfilePressure(int i, int j);
+        Profile getAltitudeProfilePressure(double x, double y);
+        Profile getAltitudeProfilePressure(Averager* avr);
 
-    Inhomogeneity* findInhomogeneity(int number);
+        Profile getAltitudeProfileHumidity(int i, int j);
+        Profile getAltitudeProfileHumidity(double x, double y);
+        Profile getAltitudeProfileHumidity(Averager* avr);
 
-    void dumpInhomogeneities(std::string file_path,
-                             std::tuple<int, int, int> resolution = std::make_tuple(10, 10, 10),
-                             bool append = true);
+        void dumpAltitudeProfile(Profile profile, std::string file_path, bool append = true);
 
-    void moveStructuralInhomogeneities(std::tuple<double, double, double> s);
-    void moveStructuralInhomogeneities(std::tuple<double, double, double> v, double t);
+        Inhomogeneity* findInhomogeneity(int number);
 
-    Spectrum getBrightnessTemperature(std::vector<Frequency> frequencies,
-                             Averager* avr, AttenuationModel* model, double theta = 0.);
+        void dumpInhomogeneities(std::string file_path,
+                                 std::tuple<int, int, int> resolution = std::make_tuple(10, 10, 10),
+                                 bool append = true);
 
-    void moveFieldsPeriodicX(double s);
-    void moveFieldsPeriodicX(double v, double t);
+        void moveStructuralInhomogeneities(std::tuple<double, double, double> s);
+        void moveStructuralInhomogeneities(std::tuple<double, double, double> v, double t);
+
+        Spectrum getBrightnessTemperature(std::vector<Frequency> frequencies,
+                                 Averager* avr, AttenuationModel* model, double theta = 0.);
+
+        Profile W_H2O(AttenuationModel* model, Frequency f);
+        Profile W_H2O(AttenuationModel* model, Frequency f, int i, int j);
+        Profile W_H2O(AttenuationModel* model, Frequency f, double x, double y);
+        Profile W_H2O(AttenuationModel* model, Frequency f, Averager* avr);
+
+        void moveFieldsPeriodicX(double s);
+        void moveFieldsPeriodicX(double v, double t);
 
 };
 

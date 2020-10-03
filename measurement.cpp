@@ -41,14 +41,43 @@ void Measurement::remember(Spectrum spectrum, Timestamp time, MDATA* DATA) {
     m->remember(spectrum, time);
 }
 
+void Measurement::remember(Frequency f, std::vector<double> first, std::vector<double> second) {
+    if (first.size() != second.size()) {
+        std::cout << *fgred << "Arrays should have the same size." << *fgdef << std::endl;
+        return;
+    }
+    for (unsigned int i = 0; i < first.size(); i++) {
+        (*DATA)[f].push_back(std::make_pair(first[i], second[i]));
+    }
+}
+
+void Measurement::remember(Frequency f, std::vector<double> first, std::vector<double> second, MDATA* DATA) {
+    Measurement* m = new Measurement(DATA);
+    m->remember(f, first, second);
+}
+
+void Measurement::normalize() {
+    for (MDATA::iterator it = DATA->begin(); it != DATA->end(); it++) {
+        TimeSeries::iterator max = std::max_element((*it).second.begin(), (*it).second.end(),
+              [](std::pair<Timestamp, double> a, std::pair<Timestamp, double> b){
+                  return (a.second < b.second);
+        });
+        for (unsigned int i = 0; i < it->second.size(); i++)
+            it->second[i].second = it->second[i].second / max->second;
+    }
+}
+
+void Measurement::normalize(MDATA* DATA) {
+    Measurement* m = new Measurement(DATA);
+    m->normalize();
+}
+
 //write MDATA - only selected frequencies
 //              if tabular=false, then frequency blocks are separated by an empty line,
 //              else data is written in a tabular structure
 void Measurement::dump(std::vector<Frequency> frequencies, std::string file_path, bool tabular, bool titled) {
-    Color::Modifier red(Color::FG_RED);
-    Color::Modifier def(Color::FG_DEFAULT);
     if (!DATA->size()) {
-        std::cout << red << "Dump Error: No data at all." << def << std::endl;
+        std::cout << *fgred << "Dump Error: No data at all." << *fgdef << std::endl;
         return;
     }
     std::ofstream out;
@@ -74,8 +103,8 @@ void Measurement::dump(std::vector<Frequency> frequencies, std::string file_path
                 f = true;
             }
             if (size != int(series->size())) {
-                std::cout << red << "Dump Error: if tabular is set, timeseries must have the same size."
-                          << def << std::endl;
+                std::cout << *fgred << "Dump Error: if tabular is set, timeseries must have the same size."
+                          << *fgdef << std::endl;
                 return;
             }
             ts = series;
@@ -83,12 +112,12 @@ void Measurement::dump(std::vector<Frequency> frequencies, std::string file_path
     }
 
     if (ts == nullptr) {
-        std::cout << red << "Dump Error: No data at such frequencies." << def << std::endl;
+        std::cout << *fgred << "Dump Error: No data at such frequencies." << *fgdef << std::endl;
         return;
     }
 
     if (titled) {
-        out << "time ";
+        out << "K ";
         for (Frequency freq : frequencies)
             if ((series = getTimeSeries(freq)) != nullptr)
                 out << freq << "F ";

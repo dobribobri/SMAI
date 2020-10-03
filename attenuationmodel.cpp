@@ -55,7 +55,7 @@ double P676K::tauClearSky(double f, double temperature, double pressure, double 
             tauWVapor(f, temperature, pressure, humidity, theta);
 }
 
-std::tuple<double, double, double> P676K::epsilon_(double T, double Sw) {
+std::tuple<double, double, double> P676K::_epsilon_(double T, double Sw) {
     double epsO_nosalt = 5.5;
     double epsS_nosalt = 88.2 - 0.40885 * T + 0.00081 * T * T;
     double lambdaS_nosalt = 1.8735116 - 0.027296 * T + 0.000136 * T * T + 1.662 * exp(-0.0634 * T);
@@ -68,7 +68,7 @@ std::tuple<double, double, double> P676K::epsilon_(double T, double Sw) {
 double P676K::gammaLWater(double f, double tcl) { // dB/km
     double lambda = C / (f * 1000000000) * 100;
     double epsO, epsS, lambdaS;
-    std::tie(epsO, epsS, lambdaS) = epsilon_(tcl, 0.);
+    std::tie(epsO, epsS, lambdaS) = _epsilon_(tcl, 0.);
     double y = lambdaS / lambda;
     return (1/dB2np) * 3 * 0.6*M_PI / lambda *
             (epsS - epsO) * y /

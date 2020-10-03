@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <random>
 
+
 bool Inhomogeneity::includesQ(std::tuple<double, double, double> coords) {
     double x, y, z;
     std::tie(x, y, z) = coords;

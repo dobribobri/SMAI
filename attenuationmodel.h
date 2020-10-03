@@ -44,7 +44,7 @@ class P676K : public AttenuationModel {
         double gammaWVapor(double f, double temperature, double pressure, double humidity) override;
         double tauWVapor(double f, double temperature, double pressure, double humidity, double theta) override;
 
-        std::tuple<double, double, double> epsilon_(double temperature, double saltiness = 0.);
+        std::tuple<double, double, double> _epsilon_(double temperature, double saltiness = 0.);
 
         double gammaLWater(double f, double tcl) override;
 

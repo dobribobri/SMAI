@@ -26,8 +26,10 @@ int main(int argc, char *argv[])
     //pydest << pysrce.rdbuf();
 
     double s = 1000;
-    double PX = 10000 / s, PY = 5000 / s, PZ = 2100 / s;
-    double Nx = 100*2, Ny = 50*2, Nz = 21*2;
+    //double PX = 10000 / s, PY = 5000 / s, PZ = 2100 / s;
+    //double Nx = 100*2, Ny = 50*2, Nz = 21*2;
+    double PX = 10000 / s, PY = 5000 / s, PZ = 50000 / s;
+    double Nx = 100*2, Ny = 50*2, Nz = 50*10;
     double l0 = 0.1 / s, L0 = 500 / s;
     int numberInhomogeneities = 1000;
     double fA = 10.;
@@ -54,7 +56,7 @@ int main(int argc, char *argv[])
 
     ab->setStandardProfiles(T0, P0, rho0);
 
-    ab->createStructuralInhomogeneities(numberInhomogeneities, false);
+    //ab->createStructuralInhomogeneities(numberInhomogeneities, false);
 
     ab->setLambdaHumidity([&](double rho, Dot3D point)
     /* mutable */ {
@@ -67,17 +69,30 @@ int main(int argc, char *argv[])
     std::string tmp02 = "tmp02.txt";
     std::string tmp_tbdata = "tmp_tbdata.txt";
     std::string tmp_sfdata = "tmp_sfdata.txt";
+    std::string tmp_wh2odata = "tmp_wh2odata.txt";
     std::remove(tmp00.c_str());
     std::remove(tmp01.c_str());
     std::remove(tmp02.c_str());
     std::remove(tmp_tbdata.c_str());
     std::remove(tmp_sfdata.c_str());
+    std::remove(tmp_wh2odata.c_str());
 
-    ab->dumpInhomogeneities(tmp00);
-    averager->dump(tmp00);
-    std::thread t0 = PipeGnuplotter::Threaded::scatter3d(tmp00);
+    //ab->dumpInhomogeneities(tmp00);
+    //averager->dump(tmp00);
+    //std::thread t0 = PipeGnuplotter::Threaded::scatter3d(tmp00);
 
     ab->setStandardProfiles(T0, P0, rho0);
+
+    MDATA WH2O;
+    for (double f = 18.0; f <= 27.2; f += 0.2) {
+        std::vector<double> z = ab->grid("z");
+        Profile W = ab->W_H2O(model, f);
+        Measurement::remember(f, z, W, &WH2O);
+    }
+    Measurement::normalize(&WH2O);
+    Dump::mData(&WH2O, tmp_wh2odata);
+
+    exit(0);
 
     ab->applyStructuralInhomogeneities(false);
 
@@ -114,7 +129,7 @@ int main(int argc, char *argv[])
     std::thread sfplot = PipeGnuplotter::Threaded::plot2d(tmp_sfdata,
                                          PipeGnuplotter::Palette::set_style_commands);
 
-    t0.join();
+    //t0.join();
     t1.join();
     t2.join();
     tbplot.join();

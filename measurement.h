@@ -9,6 +9,8 @@
 #include <utility>
 #include <map>
 #include <math.h>
+#include <algorithm>
+#include "colormod.h"
 
 typedef double Frequency;
 typedef double Timestamp;
@@ -19,26 +21,36 @@ typedef std::map<Frequency, TimeSeries> MDATA;
 
 
 class Measurement {
-public:
-    MDATA* DATA;
+    private:
+        Color::Modifier* fgred = new Color::Modifier(Color::FG_RED);
+        Color::Modifier* fgdef = new Color::Modifier(Color::FG_DEFAULT);
 
-    Measurement();
-    Measurement(MDATA* _DATA) : DATA(_DATA) { }
+    public:
+        MDATA* DATA;
 
-    std::vector<Frequency> keys();
-    static std::vector<Frequency> getKeys(MDATA* DATA);
+        Measurement();
+        Measurement(MDATA* _DATA) : DATA(_DATA) { }
 
-    TimeSeries* getTimeSeries(Frequency f);
+        std::vector<Frequency> keys();
+        static std::vector<Frequency> getKeys(MDATA* DATA);
 
-    void remember(Spectrum, Timestamp);
-    static void remember(Spectrum, Timestamp, MDATA*);
+        TimeSeries* getTimeSeries(Frequency f);
 
-    void dump(std::string file_path, bool tabular = true, bool titled = true);
-    void dump(std::vector<Frequency> frequencies,
-              std::string file_path, bool tabular = true, bool titled = false);
-    static void dump(MDATA* DATA, std::string file_path, bool tabular = true, bool titled = true);
-    static void dump(MDATA* DATA, std::vector<Frequency> frequencies,
-              std::string file_path, bool tabular = true, bool titled = false);
+        void remember(Spectrum, Timestamp);
+        void remember(Frequency, std::vector<double>, std::vector<double>);
+        static void remember(Spectrum, Timestamp, MDATA*);
+        static void remember(Frequency, std::vector<double>, std::vector<double>, MDATA*);
+
+        void normalize();
+        static void normalize(MDATA*);
+
+        void dump(std::string file_path, bool tabular = true, bool titled = true);
+        void dump(std::vector<Frequency> frequencies,
+                  std::string file_path, bool tabular = true, bool titled = false);
+        static void dump(MDATA* DATA, std::string file_path, bool tabular = true, bool titled = true);
+        static void dump(MDATA* DATA, std::vector<Frequency> frequencies,
+                  std::string file_path, bool tabular = true, bool titled = false);
+
 
 };
 

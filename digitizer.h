@@ -12,29 +12,28 @@ class Inhomogeneity;
 
 class Averager;
 
-class Digitizer
-{
-public:
-    Digitizer();
+class Digitizer {
+    public:
+        Digitizer();
 
-    std::vector<Dot3D> digitize(Dot3D center,
-                                const std::function<bool(Dot3D)> include_expr,
-                                std::pair<double, double> limits_x,
-                                std::pair<double, double> limits_y,
-                                std::pair<double, double> limits_z,
-                                std::tuple<int, int, int> resolution);
+        std::vector<Dot3D> digitize(Dot3D center,
+                                    const std::function<bool(Dot3D)> include_expr,
+                                    std::pair<double, double> limits_x,
+                                    std::pair<double, double> limits_y,
+                                    std::pair<double, double> limits_z,
+                                    std::tuple<int, int, int> resolution);
 
-    std::vector<Dot3D> digitize(Inhomogeneity* i,
-                                std::pair<double, double> limits_x,
-                                std::pair<double, double> limits_y,
-                                std::pair<double, double> limits_z,
-                                std::tuple<int, int, int> resolution);
+        std::vector<Dot3D> digitize(Inhomogeneity* i,
+                                    std::pair<double, double> limits_x,
+                                    std::pair<double, double> limits_y,
+                                    std::pair<double, double> limits_z,
+                                    std::tuple<int, int, int> resolution);
 
-    std::vector<Dot3D> digitize(Averager* a,
-                                std::pair<double, double> limits_x,
-                                std::pair<double, double> limits_y,
-                                std::pair<double, double> limits_z,
-                                std::tuple<int, int, int> resolution);
+        std::vector<Dot3D> digitize(Averager* a,
+                                    std::pair<double, double> limits_x,
+                                    std::pair<double, double> limits_y,
+                                    std::pair<double, double> limits_z,
+                                    std::tuple<int, int, int> resolution);
 
 };
 

@@ -5,8 +5,7 @@
 #include <vector>
 
 template<typename T>
-std::vector<double> linspace(T _start, T _end, int _n)
-{
+std::vector<double> linspace(T _start, T _end, int _n) {
     std::vector<double> linspaced;
 
     double start = static_cast<double>(_start);

@@ -38,6 +38,29 @@ int ABox::__j(double y) { return int(y / this->PY * (this->Ny - 1)); }
 
 int ABox::__k(double z) { return int(z / this->PZ * (this->Nz - 1)); }
 
+std::vector<double> ABox::xGrid() {
+    std::vector<double> g;
+    for (int i = 0; i < Nx; i++) g.push_back(this->__x(i));
+    return g;
+}
+
+std::vector<double> ABox::yGrid() {
+    std::vector<double> g;
+    for (int j = 0; j < Ny; j++) g.push_back(this->__y(j));
+    return g;
+}
+
+std::vector<double> ABox::zGrid() {
+    std::vector<double> g;
+    for (int k = 0; k < Nz; k++) g.push_back(this->__z(k));
+    return g;
+}
+
+std::vector<double> ABox::grid(std::string axis) {
+    if ((axis == "x") || (axis == "X")) return xGrid();
+    if ((axis == "y") || (axis == "Y")) return yGrid();
+    return zGrid();
+}
 
 void ABox::initGrid() {
     clock_t start = clock();
@@ -46,9 +69,7 @@ void ABox::initGrid() {
     this->humidity->initialize();
     clock_t end = clock();
     double seconds = double(end - start) / CLOCKS_PER_SEC;
-    Color::Modifier green(Color::FG_GREEN);
-    Color::Modifier def(Color::FG_DEFAULT);
-    std::cout << green << "ABox.initGrid()\t-\t" << seconds << " sec." << def << std::endl;
+    std::cout << *fggreen << "ABox.initGrid()\t-\t" << seconds << " sec." << *fgdef << std::endl;
 }
 
 void ABox::setStandardProfiles(double T0, double P0, double rho0, double beta, double HP, double Hrho) {
@@ -66,9 +87,7 @@ void ABox::setStandardProfiles(double T0, double P0, double rho0, double beta, d
     }
     clock_t end = clock();
     double seconds = double(end - start) / CLOCKS_PER_SEC;
-    Color::Modifier green(Color::FG_GREEN);
-    Color::Modifier def(Color::FG_DEFAULT);
-    std::cout << green << "ABox.setStandardProfiles(..)\t-\t" << seconds << " sec." << def << std::endl;
+    std::cout << *fggreen << "ABox.setStandardProfiles(..)\t-\t" << seconds << " sec." << *fgdef << std::endl;
 }
 
 void ABox::setLambdaTemperature(const std::function<double (double, std::tuple<double, double, double>)> expression) {
@@ -84,9 +103,6 @@ void ABox::setLambdaHumidity(std::function<double (double, std::tuple<double, do
 }
 
 void ABox::createStructuralInhomogeneities(int amount, bool verbose) {
-    Color::Modifier red(Color::FG_RED);
-    Color::Modifier blue(Color::FG_BLUE);
-    Color::Modifier def(Color::FG_DEFAULT);
     std::default_random_engine g;
     std::uniform_real_distribution<double> upx(0.0, PX);
     std::uniform_real_distribution<double> upy(0.0, PY);
@@ -105,7 +121,7 @@ void ABox::createStructuralInhomogeneities(int amount, bool verbose) {
             item = new Inhomogeneity(std::make_tuple(xi, yi, zi), ai, bi, ci);
             if (item->withinBoxQ(this)) break;
             else if (verbose) {
-                std::cout << blue << "..." << def << std::endl;
+                std::cout << *fgblue << "..." << *fgdef << std::endl;
             }
         }
         std::uniform_real_distribution<double> c(0, 1);
@@ -115,7 +131,7 @@ void ABox::createStructuralInhomogeneities(int amount, bool verbose) {
         bool f = true;
         for (Inhomogeneity* e: this->inhomogeneities)
             if (!item->disjointQ(e)) {
-                if (verbose) std::cout << red << "Deleted due to intersections" << def << std::endl;
+                if (verbose) std::cout << *fgred << "Deleted due to intersections" << *fgdef << std::endl;
                 f = false;
                 break;
         }
@@ -157,9 +173,7 @@ void ABox::applyStructuralInhomogeneities(bool verbose) {
     }
     clock_t end = clock();
     double seconds = double(end - start) / CLOCKS_PER_SEC;
-    Color::Modifier green(Color::FG_GREEN);
-    Color::Modifier def(Color::FG_DEFAULT);
-    std::cout << green << "ABox.applyStructuralInhomogeneities(..)\t-\t" << seconds << " sec." << def << std::endl;
+    std::cout << *fggreen << "ABox.applyStructuralInhomogeneities(..)\t-\t" << seconds << " sec." << *fgdef << std::endl;
 }
 
 Profile ABox::getAltitudeProfileTemperature(int i, int j) {
@@ -246,9 +260,7 @@ Profile ABox::getAltitudeProfileHumidity(Averager *avr) {
     }
     clock_t end = clock();
     double seconds = double(end - start) / CLOCKS_PER_SEC;
-    Color::Modifier green(Color::FG_GREEN);
-    Color::Modifier def(Color::FG_DEFAULT);
-    std::cout << green << "ABox.getAltitudeProfileHumidity(..)\t-\t" << seconds << " sec." <<  def << std::endl;
+    std::cout << *fggreen << "ABox.getAltitudeProfileHumidity(..)\t-\t" << seconds << " sec." <<  *fgdef << std::endl;
     return profile;
 }
 
@@ -290,9 +302,7 @@ void ABox::dumpInhomogeneities(std::string file_path, std::tuple<int, int, int> 
     out.close();
     clock_t end = clock();
     double seconds = double(end - start) / CLOCKS_PER_SEC;
-    Color::Modifier green(Color::FG_GREEN);
-    Color::Modifier def(Color::FG_DEFAULT);
-    std::cout << green << "ABox.dumpInhomogeneities(..)\t-\t" << seconds << " sec." << def << std::endl;
+    std::cout << *fggreen << "ABox.dumpInhomogeneities(..)\t-\t" << seconds << " sec." << *fgdef << std::endl;
 }
 
 void ABox::moveStructuralInhomogeneities(std::tuple<double, double, double> s) {
@@ -346,4 +356,34 @@ Spectrum ABox::getBrightnessTemperature(std::vector<Frequency> frequencies,
         res.push_back(std::make_pair(frequencies[unsigned(i)], integ));
     }
     return res;
+}
+
+Profile ABox::W_H2O(AttenuationModel *model, Frequency f, int i, int j) {
+    std::vector<double> profile;
+    Profile T = this->getAltitudeProfileTemperature(i, j);
+    Profile P = this->getAltitudeProfilePressure(i, j);
+    Profile rho = this->getAltitudeProfileHumidity(i, j);
+    for (unsigned int k = 0; k < rho.size(); k++) {
+        profile.push_back(model->gammaWVapor(f, T[k], P[k], rho[k]) / rho[k]);
+    }
+    return profile;
+}
+
+Profile ABox::W_H2O(AttenuationModel *model, Frequency f, double x, double y) {
+    return W_H2O(model, f, this->__i(x), this->__j(y));
+}
+
+Profile ABox::W_H2O(AttenuationModel *model, Frequency f) {
+    return W_H2O(model, f, PX/2, PY/2);
+}
+
+Profile ABox::W_H2O(AttenuationModel *model, Frequency f, Averager *avr) {
+    std::vector<double> profile;
+    Profile T = this->getAltitudeProfileTemperature(avr);
+    Profile P = this->getAltitudeProfilePressure(avr);
+    Profile rho = this->getAltitudeProfileHumidity(avr);
+    for (unsigned int k = 0; k < rho.size(); k++) {
+        profile.push_back(model->gammaWVapor(f, T[k], P[k], rho[k]) / rho[k]);
+    }
+    return profile;
 }
