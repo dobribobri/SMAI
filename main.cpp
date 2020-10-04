@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
     double s = 1000;
     //double PX = 10000 / s, PY = 5000 / s, PZ = 2100 / s;
     //double Nx = 100*2, Ny = 50*2, Nz = 21*2;
-    double PX = 10000 / s, PY = 5000 / s, PZ = 50000 / s;
+    double PX = 10000 / s, PY = 5000 / s, PZ = 40000 / s;
     double Nx = 100*2, Ny = 50*2, Nz = 50*10;
     double l0 = 0.1 / s, L0 = 500 / s;
     int numberInhomogeneities = 1000;
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
     ab->setStandardProfiles(T0, P0, rho0);
 
     MDATA WH2O;
-    for (double f = 18.0; f <= 27.2; f += 0.2) {
+    for (double f = 21.0; f <= 23.0; f += 0.1) {
         std::vector<double> z = ab->grid("z");
         Profile W = ab->W_H2O(model, f);
         Measurement::remember(f, z, W, &WH2O);

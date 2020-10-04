@@ -62,8 +62,9 @@ void Measurement::normalize() {
               [](std::pair<Timestamp, double> a, std::pair<Timestamp, double> b){
                   return (a.second < b.second);
         });
+        double _max = max->second;
         for (unsigned int i = 0; i < it->second.size(); i++)
-            it->second[i].second = it->second[i].second / max->second;
+            it->second[i].second = it->second[i].second / _max;
     }
 }
 
