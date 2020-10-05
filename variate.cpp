@@ -2,7 +2,7 @@
 #include "colormod.h"
 
 std::vector<Profile> Variate::gaussian(Profile profile,
-                                       std::function<double(unsigned int)> stddevOnIndex,
+                                       const std::function<double(unsigned int)> stddevOnIndex,
                                        unsigned int times) {
     clock_t start = clock();
     std::vector<Profile> res(times);
@@ -21,7 +21,7 @@ std::vector<Profile> Variate::gaussian(Profile profile,
     return res;
 }
 
-Profile Variate::gaussian(Profile profile, std::function<double(unsigned int)> stddevOnIndex) {
+Profile Variate::gaussian(Profile profile, const std::function<double(unsigned int)> stddevOnIndex) {
     return Variate::gaussian(profile, stddevOnIndex, 1)[0];
 }
 

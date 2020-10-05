@@ -87,14 +87,17 @@ class ABox {
 
         void applyStructuralInhomogeneities(bool verbose = true);
 
+        Profile getAltitudeProfileTemperature();
         Profile getAltitudeProfileTemperature(int i, int j);
         Profile getAltitudeProfileTemperature(double x, double y);
         Profile getAltitudeProfileTemperature(Averager* avr);
 
+        Profile getAltitudeProfilePressure();
         Profile getAltitudeProfilePressure(int i, int j);
         Profile getAltitudeProfilePressure(double x, double y);
         Profile getAltitudeProfilePressure(Averager* avr);
 
+        Profile getAltitudeProfileHumidity();
         Profile getAltitudeProfileHumidity(int i, int j);
         Profile getAltitudeProfileHumidity(double x, double y);
         Profile getAltitudeProfileHumidity(Averager* avr);
@@ -117,6 +120,7 @@ class ABox {
         Profile W_H2O(AttenuationModel* model, Frequency f, int i, int j);
         Profile W_H2O(AttenuationModel* model, Frequency f, double x, double y);
         Profile W_H2O(AttenuationModel* model, Frequency f, Averager* avr);
+        static Profile W_H2O(AttenuationModel* model, Frequency f, Profile* T, Profile* P, Profile* rho);
 
         void moveFieldsPeriodicX(double s);
         void moveFieldsPeriodicX(double v, double t);

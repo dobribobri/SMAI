@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <tuple>
+#include <map>
 #include <utility>
 #include <random>
 #include <string>
@@ -28,10 +29,10 @@ int main(int argc, char *argv[])
     //pydest << pysrce.rdbuf();
 
     double s = 1000;
-    double PX = 10000 / s, PY = 5000 / s, PZ = 2100 / s;
-    double Nx = 100*2, Ny = 50*2, Nz = 21*2;
-    //double PX = 10000 / s, PY = 5000 / s, PZ = 10000 / s;
-    //double Nx = 100*2, Ny = 50*2, Nz = 50*10;
+    //double PX = 10000 / s, PY = 5000 / s, PZ = 2100 / s;
+    //double Nx = 100*2, Ny = 50*2, Nz = 21*2;
+    double PX = 10000 / s, PY = 5000 / s, PZ = 10000 / s;
+    double Nx = 100*2, Ny = 50*2, Nz = 50*10;
     double l0 = 0.1 / s, L0 = 500 / s;
     int numberInhomogeneities = 1000;
     double fA = 10.;
@@ -61,7 +62,7 @@ int main(int argc, char *argv[])
 
     ab->setStandardProfiles(T0, P0, rho0);
 
-    ab->createStructuralInhomogeneities(numberInhomogeneities, false);
+    //ab->createStructuralInhomogeneities(numberInhomogeneities, false);
 
     ab->setLambdaHumidity([&](double rho, Dot3D point)
     /* mutable */ {
@@ -80,13 +81,14 @@ int main(int argc, char *argv[])
     std::remove(tmp_tbdata.c_str());
     std::remove(tmp_sfdata.c_str());
 
-    //ab->dumpInhomogeneities(tmp00);
-    //averager->dump(tmp00);
-    //std::thread t0 = PipeGnuplotter::Threaded::scatter3d(tmp00);
+//    Plot the created inhomogeneities as ellipsoids and the figure of averager in 3D.
+//    ab->dumpInhomogeneities(tmp00);
+//    averager->dump(tmp00);
+//    std::thread t0 = PipeGnuplotter::Threaded::scatter3d(tmp00);
 
-// Get variated altitude profiles of absolute humidity.
+// Get variated altitude profiles of absolute humidity and exit.
 //    std::vector<double> z = ab->grid("z");
-//    Profile rho = ab->getAltitudeProfileHumidity(PX/2, PY/2);
+//    Profile rho = ab->getAltitudeProfileHumidity();
 //    //int h = int(rho.size());
 //    double H2 = 2.1/PZ*Nz;
 //    for (unsigned int i = 0; i < 50; i++) {
@@ -94,7 +96,7 @@ int main(int argc, char *argv[])
 //        double stddev = (i+1)*0.1;
 //        std::vector<Profile> profiles =
 //                Variate::gaussian(rho,
-//                                  [&H2,stddev](unsigned int i){ return exp(-(i+1)/H2)*stddev; },
+//                                  [&H2,stddev](unsigned int i){ return exp(-(double(i)+1)/H2)*stddev; },
 //                                  1000);
 //        for (unsigned int k = 0; k < profiles.size(); k++)
 //            Measurement::remember(k, z, profiles[k], &rho_variated);
@@ -105,7 +107,7 @@ int main(int argc, char *argv[])
 //    }
 //    exit(0);
 
-// Get H2O weighting functions.
+// Get H2O weighting functions and exit.
 //    MDATA WH2O;
 //    std::string tmp_wh2odata;
 //    for (double f = 18.0; f <= 27.2; f += 0.2) {
@@ -134,6 +136,36 @@ int main(int argc, char *argv[])
 //    std::remove(tmp_wh2odata.c_str());
 //    Dump::mData(&WH2O, tmp_wh2odata);
 //    exit(0);
+
+    std::vector<double> z = ab->grid("z");
+    Profile T = ab->getAltitudeProfileTemperature();
+    Profile P = ab->getAltitudeProfilePressure();
+    Profile rho = ab->getAltitudeProfileHumidity();
+    double H2 = 2.1/PZ*(Nz-1);
+    for (unsigned int j = 0; j < 50; j++) {
+        double stddev = (j+1)*0.1;
+        std::function<double(unsigned int)> lambda = [&H2,stddev](unsigned int i){ return exp(-double(i)/H2)*stddev; };
+        std::vector<Profile> profiles = Variate::gaussian(rho, lambda, 1000);
+        for (unsigned int i = 0; i < profiles[0].size(); i++) {
+            std::vector<double> layerRho;
+            for (unsigned int k = 0; k < profiles.size(); k++) layerRho.push_back(profiles[k][i]);
+            std::map<Frequency, std::vector<double>> layerWH2O;
+            for (double f = 18.0; f <= 27.2; f += 0.2) {
+                for (unsigned int k = 0; k < profiles.size(); k++)
+                    layerWH2O[f].push_back(model->gammaWVapor(f, T[i], P[i], profiles[k][i]) / profiles[k][i]);
+            }
+            std::cout << "\nHeight: " << i*(PZ/(Nz-1)) << std::endl;
+            double stddev_recalc = Stat::StandardDeviation(rho[i], layerRho);
+            //std::cout << "StdDev declared: " << lambda(i) << "\t|\tStdDev obtained: " << stddev_recalc << std::endl;
+            for (double f = 18.0; f <= 27.2; f += 0.2) {
+                //std::cout << f << "GHz\t:\t";
+                double mean_wh2o = model->gammaWVapor(f, T[i], P[i], rho[i]) / rho[i];
+                double stddev_wh2o = Stat::StandardDeviation(mean_wh2o, layerWH2O[f]);
+                //std::cout << stddev_wh2o << std::endl;
+            }
+        }
+    }
+    exit(0);
 
     ab->applyStructuralInhomogeneities(false);
 

@@ -90,6 +90,24 @@ void ABox::setStandardProfiles(double T0, double P0, double rho0, double beta, d
     std::cout << *fggreen << "ABox::setStandardProfiles\t-\t" << seconds << " sec." << *fgdef << std::endl;
 }
 
+Profile ABox::getAltitudeProfileTemperature() {
+    Profile res;
+    for (int k = 0; k < Nz; k++) res.push_back(T0 - beta * this->__z(k));
+    return res;
+}
+
+Profile ABox::getAltitudeProfilePressure() {
+    Profile res;
+    for (int k = 0; k < Nz; k++) res.push_back(P0 * exp(-this->__z(k)/HP));
+    return res;
+}
+
+Profile ABox::getAltitudeProfileHumidity() {
+    Profile res;
+    for (int k = 0; k < Nz; k++) res.push_back(rho0 * exp(-this->__z(k)/Hrho));
+    return res;
+}
+
 void ABox::setLambdaTemperature(std::function<double (double, std::tuple<double, double, double>)> expression) {
     this->lambdaTemperature = expression;
 }
@@ -358,32 +376,34 @@ Spectrum ABox::getBrightnessTemperature(std::vector<Frequency> frequencies,
     return res;
 }
 
-Profile ABox::W_H2O(AttenuationModel *model, Frequency f, int i, int j) {
-    std::vector<double> profile;
-    Profile T = this->getAltitudeProfileTemperature(i, j);
-    Profile P = this->getAltitudeProfilePressure(i, j);
-    Profile rho = this->getAltitudeProfileHumidity(i, j);
-    for (unsigned int k = 0; k < rho.size(); k++) {
-        profile.push_back(model->gammaWVapor(f, T[k], P[k], rho[k]) / rho[k]);
-    }
-    return profile;
+Profile ABox::W_H2O(AttenuationModel *model, Frequency f) {
+    Profile T = this->getAltitudeProfileTemperature();
+    Profile P = this->getAltitudeProfilePressure();
+    Profile rho = this->getAltitudeProfileHumidity();
+    return ABox::W_H2O(model, f, &T, &P, &rho);
 }
 
 Profile ABox::W_H2O(AttenuationModel *model, Frequency f, double x, double y) {
     return W_H2O(model, f, this->__i(x), this->__j(y));
 }
 
-Profile ABox::W_H2O(AttenuationModel *model, Frequency f) {
-    return W_H2O(model, f, PX/2, PY/2);
+Profile ABox::W_H2O(AttenuationModel *model, Frequency f, int i, int j) {
+    Profile T = this->getAltitudeProfileTemperature(i, j);
+    Profile P = this->getAltitudeProfilePressure(i, j);
+    Profile rho = this->getAltitudeProfileHumidity(i, j);
+    return ABox::W_H2O(model, f, &T, &P, &rho);
 }
 
 Profile ABox::W_H2O(AttenuationModel *model, Frequency f, Averager *avr) {
-    std::vector<double> profile;
     Profile T = this->getAltitudeProfileTemperature(avr);
     Profile P = this->getAltitudeProfilePressure(avr);
     Profile rho = this->getAltitudeProfileHumidity(avr);
-    for (unsigned int k = 0; k < rho.size(); k++) {
-        profile.push_back(model->gammaWVapor(f, T[k], P[k], rho[k]) / rho[k]);
-    }
+    return ABox::W_H2O(model, f, &T, &P, &rho);
+}
+
+Profile ABox::W_H2O(AttenuationModel* model, Frequency f, Profile* T, Profile* P, Profile* rho) {
+    std::vector<double> profile;
+    for (unsigned int k = 0; k < rho->size(); k++)
+        profile.push_back(model->gammaWVapor(f, (*T)[k], (*P)[k], (*rho)[k]) / (*rho)[k]);
     return profile;
 }

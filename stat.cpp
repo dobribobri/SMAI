@@ -24,7 +24,7 @@ double Stat::Variance(std::vector<double> vec) {
         s_lin += x;
         s_squared += x*x;
     }
-    return (s_squared - s_lin*s_lin/vec.size()) / (vec.size() - 1);
+    return (s_squared - s_lin*s_lin/vec.size()) / (vec.size());
 }
 
 double Stat::StandardDeviation(std::vector<double> vec) {
