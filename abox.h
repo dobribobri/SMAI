@@ -77,9 +77,9 @@ class ABox {
         std::vector<double> zGrid();
         std::vector<double> grid(std::string axis = "z");
 
-        void setLambdaTemperature(const std::function<double(double, Dot3D)> expression);
+        void setLambdaTemperature(std::function<double(double, Dot3D)> expression);
 
-        void setLambdaPressure(const std::function<double(double, Dot3D)> expression);
+        void setLambdaPressure(std::function<double(double, Dot3D)> expression);
 
         void setLambdaHumidity(std::function<double(double, Dot3D)> expression);
 

@@ -15,6 +15,8 @@
 #include "attenuationmodel.h"
 #include "structuralfunction.h"
 #include "measurement.h"
+#include "variate.h"
+#include "stat.h"
 
 
 int main(int argc, char *argv[])
@@ -26,17 +28,20 @@ int main(int argc, char *argv[])
     //pydest << pysrce.rdbuf();
 
     double s = 1000;
-    //double PX = 10000 / s, PY = 5000 / s, PZ = 2100 / s;
-    //double Nx = 100*2, Ny = 50*2, Nz = 21*2;
-    double PX = 10000 / s, PY = 5000 / s, PZ = 40000 / s;
-    double Nx = 100*2, Ny = 50*2, Nz = 50*10;
+    double PX = 10000 / s, PY = 5000 / s, PZ = 2100 / s;
+    double Nx = 100*2, Ny = 50*2, Nz = 21*2;
+    //double PX = 10000 / s, PY = 5000 / s, PZ = 10000 / s;
+    //double Nx = 100*2, Ny = 50*2, Nz = 50*10;
     double l0 = 0.1 / s, L0 = 500 / s;
     int numberInhomogeneities = 1000;
     double fA = 10.;
     unsigned int seed = 42;
-    double T0 = 19.65;
-    double P0 = 755.66 * 1.333;
-    double rho0 = 10.57;
+    double T0 = 15.;
+    //double T0 = 19.65;
+    double P0 = 760. * 1.333;
+    //double P0 = 755.66 * 1.333;
+    double rho0 = 7.5;
+    //double rho0 = 10.57;
 
     std::srand(seed);
     std::default_random_engine g;
@@ -56,7 +61,7 @@ int main(int argc, char *argv[])
 
     ab->setStandardProfiles(T0, P0, rho0);
 
-    //ab->createStructuralInhomogeneities(numberInhomogeneities, false);
+    ab->createStructuralInhomogeneities(numberInhomogeneities, false);
 
     ab->setLambdaHumidity([&](double rho, Dot3D point)
     /* mutable */ {
@@ -69,30 +74,66 @@ int main(int argc, char *argv[])
     std::string tmp02 = "tmp02.txt";
     std::string tmp_tbdata = "tmp_tbdata.txt";
     std::string tmp_sfdata = "tmp_sfdata.txt";
-    std::string tmp_wh2odata = "tmp_wh2odata.txt";
     std::remove(tmp00.c_str());
     std::remove(tmp01.c_str());
     std::remove(tmp02.c_str());
     std::remove(tmp_tbdata.c_str());
     std::remove(tmp_sfdata.c_str());
-    std::remove(tmp_wh2odata.c_str());
 
     //ab->dumpInhomogeneities(tmp00);
     //averager->dump(tmp00);
     //std::thread t0 = PipeGnuplotter::Threaded::scatter3d(tmp00);
 
-    ab->setStandardProfiles(T0, P0, rho0);
+// Get variated altitude profiles of absolute humidity.
+//    std::vector<double> z = ab->grid("z");
+//    Profile rho = ab->getAltitudeProfileHumidity(PX/2, PY/2);
+//    //int h = int(rho.size());
+//    double H2 = 2.1/PZ*Nz;
+//    for (unsigned int i = 0; i < 50; i++) {
+//        MDATA rho_variated;
+//        double stddev = (i+1)*0.1;
+//        std::vector<Profile> profiles =
+//                Variate::gaussian(rho,
+//                                  [&H2,stddev](unsigned int i){ return exp(-(i+1)/H2)*stddev; },
+//                                  1000);
+//        for (unsigned int k = 0; k < profiles.size(); k++)
+//            Measurement::remember(k, z, profiles[k], &rho_variated);
+//        Measurement::modulus(&rho_variated);
+//        std::string filename = "abs_humidity_profiles_stddev" + std::to_string(i+1) + "x0.1.txt";
+//        std::remove(filename.c_str());
+//        Dump::mData(&rho_variated, filename);
+//    }
+//    exit(0);
 
-    MDATA WH2O;
-    for (double f = 21.0; f <= 23.0; f += 0.1) {
-        std::vector<double> z = ab->grid("z");
-        Profile W = ab->W_H2O(model, f);
-        Measurement::remember(f, z, W, &WH2O);
-    }
-    Measurement::normalize(&WH2O);
-    Dump::mData(&WH2O, tmp_wh2odata);
-
-    exit(0);
+// Get H2O weighting functions.
+//    MDATA WH2O;
+//    std::string tmp_wh2odata;
+//    for (double f = 18.0; f <= 27.2; f += 0.2) {
+//        std::vector<double> z = ab->grid("z");
+//        Profile W = ab->W_H2O(model, f);
+//        Measurement::remember(f, z, W, &WH2O);
+//    }
+//    tmp_wh2odata = "tmp_wh2odata_18.0_27.2_GHz_non_normalized.txt";
+//    std::remove(tmp_wh2odata.c_str());
+//    Dump::mData(&WH2O, tmp_wh2odata);
+//    Measurement::normalize(&WH2O);
+//    tmp_wh2odata = "tmp_wh2odata_18.0_27.2_GHz_normalized.txt";
+//    std::remove(tmp_wh2odata.c_str());
+//    Dump::mData(&WH2O, tmp_wh2odata);
+//    Measurement::clear(&WH2O);
+//    for (double f = 21.0; f <= 23.0; f += 0.1) {
+//        std::vector<double> z = ab->grid("z");
+//        Profile W = ab->W_H2O(model, f);
+//        Measurement::remember(f, z, W, &WH2O);
+//    }
+//    tmp_wh2odata = "tmp_wh2odata_21.0_23.0_GHz_non_normalized.txt";
+//    std::remove(tmp_wh2odata.c_str());
+//    Dump::mData(&WH2O, tmp_wh2odata);
+//    Measurement::normalize(&WH2O);
+//    tmp_wh2odata = "tmp_wh2odata_21.0_23.0_GHz_normalized.txt";
+//    std::remove(tmp_wh2odata.c_str());
+//    Dump::mData(&WH2O, tmp_wh2odata);
+//    exit(0);
 
     ab->applyStructuralInhomogeneities(false);
 

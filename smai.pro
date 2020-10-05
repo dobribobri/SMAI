@@ -26,7 +26,9 @@ SOURCES += \
         inhomogeneity.cpp \
         main.cpp \
     measurement.cpp \
-    structuralfunction.cpp
+    stat.cpp \
+    structuralfunction.cpp \
+    variate.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -46,7 +48,9 @@ HEADERS += \
     pipegnuplotter.h \
     # plotter.h \
     rotation.h \
-    structuralfunction.h
+    stat.h \
+    structuralfunction.h \
+    variate.h
 
 # DISTFILES += \
 #    plotter.py

@@ -47,7 +47,7 @@ void Averager::dump(std::string file_path, std::tuple<int, int, int> resolution,
     double seconds = double(end - start) / CLOCKS_PER_SEC;
     Color::Modifier green(Color::FG_GREEN);
     Color::Modifier def(Color::FG_DEFAULT);
-    std::cout << green << "Averager.dump(..)\t-\t" << seconds << " sec." << def << std::endl;
+    std::cout << green << "Averager::dump\t-\t" << seconds << " sec." << def << std::endl;
 }
 
 

@@ -69,7 +69,7 @@ void ABox::initGrid() {
     this->humidity->initialize();
     clock_t end = clock();
     double seconds = double(end - start) / CLOCKS_PER_SEC;
-    std::cout << *fggreen << "ABox.initGrid()\t-\t" << seconds << " sec." << *fgdef << std::endl;
+    std::cout << *fggreen << "ABox::initGrid\t-\t" << seconds << " sec." << *fgdef << std::endl;
 }
 
 void ABox::setStandardProfiles(double T0, double P0, double rho0, double beta, double HP, double Hrho) {
@@ -87,14 +87,14 @@ void ABox::setStandardProfiles(double T0, double P0, double rho0, double beta, d
     }
     clock_t end = clock();
     double seconds = double(end - start) / CLOCKS_PER_SEC;
-    std::cout << *fggreen << "ABox.setStandardProfiles(..)\t-\t" << seconds << " sec." << *fgdef << std::endl;
+    std::cout << *fggreen << "ABox::setStandardProfiles\t-\t" << seconds << " sec." << *fgdef << std::endl;
 }
 
-void ABox::setLambdaTemperature(const std::function<double (double, std::tuple<double, double, double>)> expression) {
+void ABox::setLambdaTemperature(std::function<double (double, std::tuple<double, double, double>)> expression) {
     this->lambdaTemperature = expression;
 }
 
-void ABox::setLambdaPressure(const std::function<double (double, std::tuple<double, double, double>)> expression) {
+void ABox::setLambdaPressure(std::function<double (double, std::tuple<double, double, double>)> expression) {
     this->lambdaPressure = expression;
 }
 
@@ -173,7 +173,7 @@ void ABox::applyStructuralInhomogeneities(bool verbose) {
     }
     clock_t end = clock();
     double seconds = double(end - start) / CLOCKS_PER_SEC;
-    std::cout << *fggreen << "ABox.applyStructuralInhomogeneities(..)\t-\t" << seconds << " sec." << *fgdef << std::endl;
+    std::cout << *fggreen << "ABox::applyStructuralInhomogeneities\t-\t" << seconds << " sec." << *fgdef << std::endl;
 }
 
 Profile ABox::getAltitudeProfileTemperature(int i, int j) {
@@ -260,7 +260,7 @@ Profile ABox::getAltitudeProfileHumidity(Averager *avr) {
     }
     clock_t end = clock();
     double seconds = double(end - start) / CLOCKS_PER_SEC;
-    std::cout << *fggreen << "ABox.getAltitudeProfileHumidity(..)\t-\t" << seconds << " sec." <<  *fgdef << std::endl;
+    std::cout << *fggreen << "ABox::getAltitudeProfileHumidity\t-\t" << seconds << " sec." <<  *fgdef << std::endl;
     return profile;
 }
 
@@ -302,7 +302,7 @@ void ABox::dumpInhomogeneities(std::string file_path, std::tuple<int, int, int> 
     out.close();
     clock_t end = clock();
     double seconds = double(end - start) / CLOCKS_PER_SEC;
-    std::cout << *fggreen << "ABox.dumpInhomogeneities(..)\t-\t" << seconds << " sec." << *fgdef << std::endl;
+    std::cout << *fggreen << "ABox::dumpInhomogeneities\t-\t" << seconds << " sec." << *fgdef << std::endl;
 }
 
 void ABox::moveStructuralInhomogeneities(std::tuple<double, double, double> s) {

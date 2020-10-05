@@ -64,7 +64,7 @@ void Measurement::normalize() {
         });
         double _max = max->second;
         for (unsigned int i = 0; i < it->second.size(); i++)
-            it->second[i].second = it->second[i].second / _max;
+            it->second[i].second /= _max;
     }
 }
 
@@ -73,13 +73,36 @@ void Measurement::normalize(MDATA* DATA) {
     m->normalize();
 }
 
+void Measurement::modulus() {
+    for (MDATA::iterator it = DATA->begin(); it != DATA->end(); it++) {
+        for (unsigned int i = 0; i < it->second.size(); i++)
+            it->second[i].second = abs(it->second[i].second);
+    }
+}
+
+void Measurement::modulus(MDATA* DATA) {
+    Measurement* m = new Measurement(DATA);
+    m->modulus();
+}
+
+void Measurement::clear() {
+    for (MDATA::iterator it = DATA->begin(); it != DATA->end(); it++) it->second.clear();
+    DATA->clear();
+}
+
+void Measurement::clear(MDATA* DATA) {
+    Measurement* m = new Measurement(DATA);
+    m->clear();
+}
+
 //write MDATA - only selected frequencies
 //              if tabular=false, then frequency blocks are separated by an empty line,
 //              else data is written in a tabular structure
 void Measurement::dump(std::vector<Frequency> frequencies, std::string file_path, bool tabular, bool titled) {
     if (!DATA->size()) {
-        std::cout << *fgred << "Dump Error: No data at all." << *fgdef << std::endl;
-        return;
+        //std::cout << *fgred << "Dump Error: No data at all." << *fgdef << std::endl;
+        //return;
+        throw "Dump Error: No data at all.";
     }
     std::ofstream out;
     out.open(file_path);
@@ -104,17 +127,19 @@ void Measurement::dump(std::vector<Frequency> frequencies, std::string file_path
                 f = true;
             }
             if (size != int(series->size())) {
-                std::cout << *fgred << "Dump Error: if tabular is set, timeseries must have the same size."
-                          << *fgdef << std::endl;
-                return;
+                //std::cout << *fgred << "Dump Error: if tabular is set, timeseries must have the same size."
+                //          << *fgdef << std::endl;
+                //return;
+                throw "Dump Error: if tabular is set, timeseries must have the same size.";
             }
             ts = series;
         }
     }
 
     if (ts == nullptr) {
-        std::cout << *fgred << "Dump Error: No data at such frequencies." << *fgdef << std::endl;
-        return;
+        //std::cout << *fgred << "Dump Error: No data at such frequencies." << *fgdef << std::endl;
+        //return;
+        throw "Dump Error: No data at such frequencies.";
     }
 
     if (titled) {

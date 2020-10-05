@@ -44,6 +44,9 @@ class Measurement {
         void normalize();
         static void normalize(MDATA*);
 
+        void modulus();
+        static void modulus(MDATA*);
+
         void dump(std::string file_path, bool tabular = true, bool titled = true);
         void dump(std::vector<Frequency> frequencies,
                   std::string file_path, bool tabular = true, bool titled = false);
@@ -51,6 +54,8 @@ class Measurement {
         static void dump(MDATA* DATA, std::vector<Frequency> frequencies,
                   std::string file_path, bool tabular = true, bool titled = false);
 
+        void clear();
+        static void clear(MDATA*);
 
 };
 
@@ -75,9 +80,7 @@ namespace Dump {
     void mData(MDATA* DATA, std::string file_path, bool tabular = true, bool titled = true);
     void mData(MDATA* DATA, std::vector<Frequency> frequencies,
                    std::string file_path, bool tabular = true, bool titled = false);
+
 }
-
-
-
 
 #endif // MEASUREMENT_H
