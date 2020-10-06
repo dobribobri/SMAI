@@ -14,10 +14,12 @@
 
 typedef double Frequency;
 typedef double Timestamp;
+typedef double AnyDouble;
 typedef std::vector<double> Profile;
-typedef std::vector<std::pair<Frequency, double>> Spectrum;
-typedef std::vector<std::pair<Timestamp, double>> TimeSeries;
-typedef std::map<Frequency, TimeSeries> MDATA;
+typedef std::vector<std::pair<AnyDouble, double>> Spectrum;
+typedef std::vector<std::pair<AnyDouble, double>> Series;
+typedef Series TimeSeries;
+typedef std::map<AnyDouble, Series> MDATA;
 
 
 class Measurement {
@@ -31,15 +33,15 @@ class Measurement {
         Measurement();
         Measurement(MDATA* _DATA) : DATA(_DATA) { }
 
-        std::vector<Frequency> keys();
-        static std::vector<Frequency> getKeys(MDATA* DATA);
+        std::vector<AnyDouble> keys();
+        static std::vector<AnyDouble> getKeys(MDATA* DATA);
 
-        TimeSeries* getTimeSeries(Frequency f);
+        Series* getSeries(AnyDouble frequency_or_key);
 
-        void remember(Spectrum, Timestamp);
-        void remember(Frequency, std::vector<double>, std::vector<double>);
-        static void remember(Spectrum, Timestamp, MDATA*);
-        static void remember(Frequency, std::vector<double>, std::vector<double>, MDATA*);
+        void remember(Spectrum, AnyDouble);
+        void remember(AnyDouble, std::vector<double>, std::vector<double>);
+        static void remember(Spectrum, AnyDouble, MDATA*);
+        static void remember(AnyDouble, std::vector<double>, std::vector<double>, MDATA*);
 
         void normalize();
         static void normalize(MDATA*);
@@ -48,10 +50,10 @@ class Measurement {
         static void modulus(MDATA*);
 
         void dump(std::string file_path, bool tabular = true, bool titled = true);
-        void dump(std::vector<Frequency> frequencies,
+        void dump(std::vector<AnyDouble> frequencies_or_keys,
                   std::string file_path, bool tabular = true, bool titled = false);
         static void dump(MDATA* DATA, std::string file_path, bool tabular = true, bool titled = true);
-        static void dump(MDATA* DATA, std::vector<Frequency> frequencies,
+        static void dump(MDATA* DATA, std::vector<AnyDouble> frequencies_or_keys,
                   std::string file_path, bool tabular = true, bool titled = false);
 
         void clear();
@@ -64,21 +66,21 @@ namespace Dump {
 
     void spectrum(Spectrum spectrum,
                   std::string file_path, bool append = true);
-    void spectrum(Spectrum spectrum, std::vector<Frequency> frequencies,
+    void spectrum(Spectrum spectrum, std::vector<AnyDouble> frequencies_or_keys,
                   std::ofstream& out);
-    void spectrum(Spectrum spectrum, std::vector<Frequency> frequencies,
+    void spectrum(Spectrum spectrum, std::vector<AnyDouble> frequencies_or_keys,
                   std::string file_path, bool append = true);
 
-    void peak(Spectrum spectrum, Frequency frequency, Timestamp t,
+    void peak(Spectrum spectrum, AnyDouble frequency_or_key, AnyDouble time_or_key2,
               std::ofstream& out);
-    void peak(Spectrum spectrum, Frequency frequency, Timestamp t,
+    void peak(Spectrum spectrum, AnyDouble frequency_or_key, AnyDouble time_or_key2,
               std::string file_path, bool append = true);
 
-    void timeSeries(TimeSeries series, std::ofstream& out);
-    void timeSeries(TimeSeries series, std::string file_path, bool append = true);
+    void series(Series series, std::ofstream& out);
+    void series(Series series, std::string file_path, bool append = true);
 
     void mData(MDATA* DATA, std::string file_path, bool tabular = true, bool titled = true);
-    void mData(MDATA* DATA, std::vector<Frequency> frequencies,
+    void mData(MDATA* DATA, std::vector<AnyDouble> frequencies_or_keys,
                    std::string file_path, bool tabular = true, bool titled = false);
 
 }

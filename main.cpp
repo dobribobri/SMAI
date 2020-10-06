@@ -9,6 +9,8 @@
 #include <random>
 #include <string>
 #include <thread>
+#include <locale>
+#include <sstream>
 #include "abox.h"
 #include "averager.h"
 #include "pipegnuplotter.h"
@@ -22,6 +24,8 @@
 
 int main(int argc, char *argv[])
 {
+    setlocale(LC_ALL, nullptr);
+
     QCoreApplication a(argc, argv);
 
     //std::ifstream pysrce("../SMAI/plotter.py", std::ios::binary);
@@ -142,6 +146,8 @@ int main(int argc, char *argv[])
     Profile P = ab->getAltitudeProfilePressure();
     Profile rho = ab->getAltitudeProfileHumidity();
     double H2 = 2.1/PZ*(Nz-1);
+    MDATA DATA;
+    Measurement* m = new Measurement(&DATA);
     for (unsigned int j = 0; j < 50; j++) {
         double stddev = (j+1)*0.1;
         std::function<double(unsigned int)> lambda = [&H2,stddev](unsigned int i){ return exp(-double(i)/H2)*stddev; };
@@ -154,16 +160,22 @@ int main(int argc, char *argv[])
                 for (unsigned int k = 0; k < profiles.size(); k++)
                     layerWH2O[f].push_back(model->gammaWVapor(f, T[i], P[i], profiles[k][i]) / profiles[k][i]);
             }
-            std::cout << "\nHeight: " << i*(PZ/(Nz-1)) << std::endl;
+            double height = i*(ab->PZ/(ab->Nz-1));
+            std::cout << "\nHeight: " << height << std::endl;
             double stddev_recalc = Stat::StandardDeviation(rho[i], layerRho);
-            //std::cout << "StdDev declared: " << lambda(i) << "\t|\tStdDev obtained: " << stddev_recalc << std::endl;
+            std::cout << "StdDev declared: " << lambda(i) << "\t|\tStdDev obtained: " << stddev_recalc << std::endl;
+            Spectrum wh2o_stddev;
             for (double f = 18.0; f <= 27.2; f += 0.2) {
-                //std::cout << f << "GHz\t:\t";
                 double mean_wh2o = model->gammaWVapor(f, T[i], P[i], rho[i]) / rho[i];
-                double stddev_wh2o = Stat::StandardDeviation(mean_wh2o, layerWH2O[f]);
-                //std::cout << stddev_wh2o << std::endl;
+                wh2o_stddev.push_back(std::make_pair(f, Stat::StandardDeviation(mean_wh2o, layerWH2O[f])));
             }
+            m->remember(wh2o_stddev, height);
         }
+        std::ostringstream out;
+        out.precision(1);
+        out << std::fixed << stddev;
+        m->dump("WH2O_deviations_on_height_10km__rho(0)_stddev_" + out.str() + ".txt");
+        m->clear();
     }
     exit(0);
 

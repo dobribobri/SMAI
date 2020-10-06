@@ -2,19 +2,19 @@
 #include "colormod.h"
 
 
-std::vector<Frequency> Measurement::keys() {
-    std::vector<Frequency> keys;
-    for (std::pair<Frequency, TimeSeries> item : *DATA)
+std::vector<AnyDouble> Measurement::keys() {
+    std::vector<AnyDouble> keys;
+    for (std::pair<AnyDouble, Series> item : *DATA)
         keys.push_back(item.first);
     return keys;
 }
 
-std::vector<Frequency> Measurement::getKeys(MDATA* DATA) {
+std::vector<AnyDouble> Measurement::getKeys(MDATA* DATA) {
     Measurement* m = new Measurement(DATA);
     return m->keys();
 }
 
-TimeSeries* Measurement::getTimeSeries(Frequency f) {
+Series* Measurement::getSeries(AnyDouble f) {
     for (MDATA::iterator it = DATA->begin(); it != DATA->end(); it++) {
         if (abs(it->first - f) < FREQ_EPS) {
             return &(it->second);
@@ -23,25 +23,25 @@ TimeSeries* Measurement::getTimeSeries(Frequency f) {
     return nullptr;
 }
 
-void Measurement::remember(Spectrum spectrum, Timestamp time) {
-    for (std::pair<Frequency, double> peak : spectrum) {
-        TimeSeries* series = nullptr;
-        if ((series = getTimeSeries(peak.first)) != nullptr)
-            series->push_back(std::make_pair(time, peak.second));
+void Measurement::remember(Spectrum spectrum, AnyDouble t) {
+    for (std::pair<AnyDouble, double> peak : spectrum) {
+        Series* series = nullptr;
+        if ((series = getSeries(peak.first)) != nullptr)
+            series->push_back(std::make_pair(t, peak.second));
         else {
-            TimeSeries series;
-            series.push_back(std::make_pair(time, peak.second));
-            DATA->insert(std::pair<Frequency, TimeSeries>(peak.first, series));
+            Series series;
+            series.push_back(std::make_pair(t, peak.second));
+            DATA->insert(std::pair<AnyDouble, Series>(peak.first, series));
         }
     }
 }
 
-void Measurement::remember(Spectrum spectrum, Timestamp time, MDATA* DATA) {
+void Measurement::remember(Spectrum spectrum, AnyDouble t, MDATA* DATA) {
     Measurement* m = new Measurement(DATA);
-    m->remember(spectrum, time);
+    m->remember(spectrum, t);
 }
 
-void Measurement::remember(Frequency f, std::vector<double> first, std::vector<double> second) {
+void Measurement::remember(AnyDouble f, std::vector<double> first, std::vector<double> second) {
     if (first.size() != second.size()) {
         std::cout << *fgred << "Arrays should have the same size." << *fgdef << std::endl;
         return;
@@ -51,15 +51,15 @@ void Measurement::remember(Frequency f, std::vector<double> first, std::vector<d
     }
 }
 
-void Measurement::remember(Frequency f, std::vector<double> first, std::vector<double> second, MDATA* DATA) {
+void Measurement::remember(AnyDouble f, std::vector<double> first, std::vector<double> second, MDATA* DATA) {
     Measurement* m = new Measurement(DATA);
     m->remember(f, first, second);
 }
 
 void Measurement::normalize() {
     for (MDATA::iterator it = DATA->begin(); it != DATA->end(); it++) {
-        TimeSeries::iterator max = std::max_element((*it).second.begin(), (*it).second.end(),
-              [](std::pair<Timestamp, double> a, std::pair<Timestamp, double> b){
+        Series::iterator max = std::max_element((*it).second.begin(), (*it).second.end(),
+              [](std::pair<AnyDouble, double> a, std::pair<AnyDouble, double> b){
                   return (a.second < b.second);
         });
         double _max = max->second;
@@ -98,7 +98,7 @@ void Measurement::clear(MDATA* DATA) {
 //write MDATA - only selected frequencies
 //              if tabular=false, then frequency blocks are separated by an empty line,
 //              else data is written in a tabular structure
-void Measurement::dump(std::vector<Frequency> frequencies, std::string file_path, bool tabular, bool titled) {
+void Measurement::dump(std::vector<AnyDouble> fs, std::string file_path, bool tabular, bool titled) {
     if (!DATA->size()) {
         //std::cout << *fgred << "Dump Error: No data at all." << *fgdef << std::endl;
         //return;
@@ -106,22 +106,22 @@ void Measurement::dump(std::vector<Frequency> frequencies, std::string file_path
     }
     std::ofstream out;
     out.open(file_path);
-    TimeSeries* series;
+    Series* series;
     if (!tabular) {
-        for (Frequency f : frequencies) {
-            if ((series = getTimeSeries(f)) != nullptr) {
+        for (AnyDouble f : fs) {
+            if ((series = getSeries(f)) != nullptr) {
                 out << f << std::endl;
-                Dump::timeSeries(*series, out);
+                Dump::series(*series, out);
                 out << std::endl;
             }
         }
         return;
     }
 
-    TimeSeries* ts = nullptr;
+    Series* ts = nullptr;
     int size = 0; bool f = false;
-    for (Frequency freq : frequencies) {
-        if ((series = getTimeSeries(freq)) != nullptr) {
+    for (AnyDouble freq : fs) {
+        if ((series = getSeries(freq)) != nullptr) {
             if (!f) {
                 size = int(series->size());
                 f = true;
@@ -143,17 +143,17 @@ void Measurement::dump(std::vector<Frequency> frequencies, std::string file_path
     }
 
     if (titled) {
-        out << "K ";
-        for (Frequency freq : frequencies)
-            if ((series = getTimeSeries(freq)) != nullptr)
+        out << "T ";
+        for (AnyDouble freq : fs)
+            if ((series = getSeries(freq)) != nullptr)
                 out << freq << "F ";
         out << std::endl;
     }
 
     for (unsigned int i = 0; i < ts->size(); i++) {
         out << (*ts).at(i).first << " ";
-        for (Frequency freq : frequencies) {
-            if ((series = getTimeSeries(freq)) != nullptr)
+        for (AnyDouble freq : fs) {
+            if ((series = getSeries(freq)) != nullptr)
                 out << (*series).at(i).second << " ";
         }
         out << std::endl;
@@ -169,10 +169,10 @@ void Measurement::dump(std::string file_path, bool tabular, bool titled) {
     dump(keys(), file_path, tabular, titled);
 }
 
-void Measurement::dump(MDATA *DATA, std::vector<Frequency> frequencies,
+void Measurement::dump(MDATA *DATA, std::vector<AnyDouble> fs,
                        std::string file_path, bool tabular, bool titled) {
     Measurement* m = new Measurement(DATA);
-    m->dump(frequencies, file_path, tabular, titled);
+    m->dump(fs, file_path, tabular, titled);
 }
 
 void Measurement::dump(MDATA *DATA, std::string file_path, bool tabular, bool titled) {
@@ -181,10 +181,10 @@ void Measurement::dump(MDATA *DATA, std::string file_path, bool tabular, bool ti
 }
 
 //write only several frequencies
-void Dump::spectrum(Spectrum spectrum, std::vector<Frequency> frequencies, std::ofstream& out) {
+void Dump::spectrum(Spectrum spectrum, std::vector<AnyDouble> fs, std::ofstream& out) {
     for (unsigned int k = 0; k < spectrum.size(); k++) {
-        for (unsigned int i = 0; i < frequencies.size(); i++)
-            if (abs(spectrum[k].first - frequencies[i]) < FREQ_EPS) {
+        for (unsigned int i = 0; i < fs.size(); i++)
+            if (abs(spectrum[k].first - fs[i]) < FREQ_EPS) {
                 out << spectrum[k].first << " " << spectrum[k].second << std::endl;
                 break;
         }
@@ -192,57 +192,57 @@ void Dump::spectrum(Spectrum spectrum, std::vector<Frequency> frequencies, std::
 }
 
 //write only several frequencies
-void Dump::spectrum(Spectrum spectrum, std::vector<Frequency> frequencies, std::string file_path, bool append) {
+void Dump::spectrum(Spectrum spectrum, std::vector<AnyDouble> fs, std::string file_path, bool append) {
     std::ofstream out;
     if (append) out.open(file_path, std::ios::app);
     else out.open(file_path);
-    Dump::spectrum(spectrum, frequencies, out);
+    Dump::spectrum(spectrum, fs, out);
     out << std::endl;
     out.close();
 }
 
 //write spectrum as-is
 void Dump::spectrum(Spectrum spectrum, std::string file_path, bool append) {
-    std::vector<Frequency> freqs;
-    for (std::pair<Frequency, double> peak : spectrum) freqs.push_back(peak.first);
-    Dump::spectrum(spectrum, freqs, file_path, append);
+    std::vector<AnyDouble> fs;
+    for (std::pair<AnyDouble, double> peak : spectrum) fs.push_back(peak.first);
+    Dump::spectrum(spectrum, fs, file_path, append);
 }
 
 //write timestamp and value for only one frequency
-void Dump::peak(Spectrum spectrum, Frequency frequency, Timestamp t, std::ofstream& out) {
+void Dump::peak(Spectrum spectrum, AnyDouble f, AnyDouble t, std::ofstream& out) {
     for (unsigned int k = 0; k < spectrum.size(); k++)
-        if (abs(spectrum[k].first - frequency) < FREQ_EPS)
+        if (abs(spectrum[k].first - f) < FREQ_EPS)
              out << t << " " << spectrum[k].second << std::endl;
 }
 
 //write timestamp and value for only one frequency
-void Dump::peak(Spectrum spectrum, Frequency frequency, Timestamp t, std::string file_path, bool append) {
+void Dump::peak(Spectrum spectrum, AnyDouble f, AnyDouble t, std::string file_path, bool append) {
     std::ofstream out;
     if (append) out.open(file_path, std::ios::app);
     else out.open(file_path);
-    Dump::peak(spectrum, frequency, t, out);
+    Dump::peak(spectrum, f, t, out);
     out.close();
 }
 
 //write TimeSeries as-is
-void Dump::timeSeries(TimeSeries series, std::string file_path, bool append) {
+void Dump::series(Series series, std::string file_path, bool append) {
     std::ofstream out;
     if (append) out.open(file_path, std::ios::app);
     else out.open(file_path);
-    Dump::timeSeries(series, out);
+    Dump::series(series, out);
     out << std::endl;
     out.close();
 }
 
 //write TimeSeries as-is into ofstream
-void Dump::timeSeries(TimeSeries series, std::ofstream& out) {
-    for (std::pair<Timestamp, double> item : series)
+void Dump::series(Series series, std::ofstream& out) {
+    for (std::pair<AnyDouble, double> item : series)
         out << item.first << " " << item.second << std::endl;
 }
 
-void Dump::mData(MDATA* DATA, std::vector<Frequency> frequencies,
+void Dump::mData(MDATA* DATA, std::vector<AnyDouble> fs,
                  std::string file_path, bool tabular, bool titled) {
-    Measurement::dump(DATA, frequencies, file_path, tabular, titled);
+    Measurement::dump(DATA, fs, file_path, tabular, titled);
 }
 
 void Dump::mData(MDATA* DATA, std::string file_path, bool tabular, bool titled) {
