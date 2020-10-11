@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
         std::ostringstream out;
         out.precision(1);
         out << std::fixed << stddev;
-        m->dump("WH2O_deviations_on_height_10km__rho(0)_stddev_" + out.str() + ".txt");
+        m->dump("WH2O_deviations_on_height_40km__rho(0)_stddev_" + out.str() + ".txt");
         m->clear();
     }
     exit(0);
