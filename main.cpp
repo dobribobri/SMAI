@@ -35,8 +35,8 @@ int main(int argc, char *argv[])
     double s = 1000;
     //double PX = 10000 / s, PY = 5000 / s, PZ = 2100 / s;
     //double Nx = 100*2, Ny = 50*2, Nz = 21*2;
-    double PX = 10000 / s, PY = 5000 / s, PZ = 10000 / s;
-    double Nx = 100*2, Ny = 50*2, Nz = 50*10;
+    double PX = 10000 / s, PY = 5000 / s, PZ = 40000 / s;
+    double Nx = 100*2, Ny = 50*2, Nz = 40*10*4;
     double l0 = 0.1 / s, L0 = 500 / s;
     int numberInhomogeneities = 1000;
     double fA = 10.;
@@ -64,7 +64,13 @@ int main(int argc, char *argv[])
     AttenuationModel* model = new P676K();
 
 
-    ab->setStandardProfiles(T0, P0, rho0);
+    ab->T0 = T0; ab->P0 = P0; ab->rho0 = rho0;
+    ab->setStandardProfiles();
+
+// Check if temperature profile is alright.
+//    std::remove("t_check.tmp");
+//    ab->dumpAltitudeProfile(ab->getAltitudeProfileTemperature(), "t_check.tmp");
+//    exit(0);
 
     //ab->createStructuralInhomogeneities(numberInhomogeneities, false);
 
@@ -85,7 +91,7 @@ int main(int argc, char *argv[])
     std::remove(tmp_tbdata.c_str());
     std::remove(tmp_sfdata.c_str());
 
-//    Plot the created inhomogeneities as ellipsoids and the figure of averager in 3D.
+// Plot the created inhomogeneities as ellipsoids and the figure of averager in 3D.
 //    ab->dumpInhomogeneities(tmp00);
 //    averager->dump(tmp00);
 //    std::thread t0 = PipeGnuplotter::Threaded::scatter3d(tmp00);
@@ -127,7 +133,7 @@ int main(int argc, char *argv[])
 //    std::remove(tmp_wh2odata.c_str());
 //    Dump::mData(&WH2O, tmp_wh2odata);
 //    Measurement::clear(&WH2O);
-//    for (double f = 21.0; f <= 23.0; f += 0.1) {
+//    for (double f = 21.0; f <= 23.0; f += 0.01) {
 //        std::vector<double> z = ab->grid("z");
 //        Profile W = ab->W_H2O(model, f);
 //        Measurement::remember(f, z, W, &WH2O);
@@ -141,6 +147,8 @@ int main(int argc, char *argv[])
 //    Dump::mData(&WH2O, tmp_wh2odata);
 //    exit(0);
 
+
+// H2O weighting functions deviation analysis.
     std::vector<double> z = ab->grid("z");
     Profile T = ab->getAltitudeProfileTemperature();
     Profile P = ab->getAltitudeProfilePressure();
@@ -150,6 +158,7 @@ int main(int argc, char *argv[])
     Measurement* m = new Measurement(&DATA);
     for (unsigned int j = 0; j < 50; j++) {
         double stddev = (j+1)*0.1;
+        std::cout << stddev << std::endl;
         std::function<double(unsigned int)> lambda = [&H2,stddev](unsigned int i){ return exp(-double(i)/H2)*stddev; };
         std::vector<Profile> profiles = Variate::gaussian(rho, lambda, 1000);
         for (unsigned int i = 0; i < profiles[0].size(); i++) {
@@ -161,9 +170,9 @@ int main(int argc, char *argv[])
                     layerWH2O[f].push_back(model->gammaWVapor(f, T[i], P[i], profiles[k][i]) / profiles[k][i]);
             }
             double height = i*(ab->PZ/(ab->Nz-1));
-            std::cout << "\nHeight: " << height << std::endl;
-            double stddev_recalc = Stat::StandardDeviation(rho[i], layerRho);
-            std::cout << "StdDev declared: " << lambda(i) << "\t|\tStdDev obtained: " << stddev_recalc << std::endl;
+            //std::cout << "\nHeight: " << height << std::endl;
+            //double stddev_recalc = Stat::StandardDeviation(rho[i], layerRho);
+            //std::cout << "StdDev declared: " << lambda(i) << "\t|\tStdDev obtained: " << stddev_recalc << std::endl;
             Spectrum wh2o_stddev;
             for (double f = 18.0; f <= 27.2; f += 0.2) {
                 double mean_wh2o = model->gammaWVapor(f, T[i], P[i], rho[i]) / rho[i];

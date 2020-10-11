@@ -5,6 +5,7 @@
 #include <vector>
 #include <random>
 #include <functional>
+#include <time.h>
 
 typedef std::vector<double> Profile;
 

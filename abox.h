@@ -20,6 +20,7 @@
 typedef std::vector<double> Profile;
 typedef double Frequency;
 typedef std::vector<std::pair<Frequency, double>> Spectrum;
+typedef double Height;
 
 
 class Inhomogeneity;
@@ -61,16 +62,20 @@ class ABox {
         std::function<double(double, Dot3D)> lambdaHumidity;
 
         double T0 = 15., P0 = 1013., rho0 = 7.5;
-        double beta = 6.5, HP = 7.7, Hrho = 2.1;
+        double HP = 7.7, Hrho = 2.1;
+        std::map<std::pair<Height, Height>, std::function<double(double)>> beta = {
+            {{0, 11}, [](double h){ return -6.5*h; }}, {{11, 20}, [](double h){ return -6.5*11+h*0; }},
+            {{20, 32}, [](double h){ return -6.5*11+(h-20); }}, {{32, 47}, [](double h){ return -6.5*11+(32-20)+2.8*(h-32); }},
+            {{47, 50}, [](double h){ return -15-3.5+h*0; }}
+        };
 
-        ABox(std::tuple<double, double, double> sizes,
+        ABox(std::tuple<double, double, Height> sizes,
              std::tuple<int, int, int> N,
              std::pair<double, double> inertial_interval);
 
         void initGrid();
 
-        void setStandardProfiles(double T0 = 15., double P0 = 1013., double rho0 = 7.5,
-                                 double beta = 6.5, double HP = 7.7, double Hrho = 2.1);
+        void setStandardProfiles();
 
         std::vector<double> xGrid();
         std::vector<double> yGrid();

@@ -40,19 +40,19 @@ int ABox::__k(double z) { return int(z / this->PZ * (this->Nz - 1)); }
 
 std::vector<double> ABox::xGrid() {
     std::vector<double> g;
-    for (int i = 0; i < Nx; i++) g.push_back(this->__x(i));
+    for (int i = 0; i < Nx; i++) g.push_back(__x(i));
     return g;
 }
 
 std::vector<double> ABox::yGrid() {
     std::vector<double> g;
-    for (int j = 0; j < Ny; j++) g.push_back(this->__y(j));
+    for (int j = 0; j < Ny; j++) g.push_back(__y(j));
     return g;
 }
 
 std::vector<double> ABox::zGrid() {
     std::vector<double> g;
-    for (int k = 0; k < Nz; k++) g.push_back(this->__z(k));
+    for (int k = 0; k < Nz; k++) g.push_back(__z(k));
     return g;
 }
 
@@ -72,16 +72,20 @@ void ABox::initGrid() {
     std::cout << *fggreen << "ABox::initGrid\t-\t" << seconds << " sec." << *fgdef << std::endl;
 }
 
-void ABox::setStandardProfiles(double T0, double P0, double rho0, double beta, double HP, double Hrho) {
+void ABox::setStandardProfiles() {
     clock_t start = clock();
-    this->T0 = T0; this->P0 = P0; this->rho0 = rho0;
-    this->beta = beta; this->HP = HP; this->Hrho = Hrho;
     for (int i = 0; i < Nx; i++) {
         for (int j = 0; j < Ny; j++) {
             for (int k = 0; k < Nz; k++) {
-                this->temperature->field[i][j][k] = T0 - beta * this->__z(k);
-                this->pressure->field[i][j][k] = P0 * exp(-this->__z(k)/HP);
-                this->humidity->field[i][j][k] = rho0 * exp(-this->__z(k)/Hrho);
+                for (std::map<std::pair<Height, Height>, std::function<double(double)>>::iterator it = beta.begin();
+                     it != beta.end();
+                     it++)
+                    if ((it->first.first <= __z(k)) && (__z(k) < it->first.second)) {
+                        temperature->field[i][j][k] = T0 + it->second(__z(k));
+                        break;
+                }
+                pressure->field[i][j][k] = P0 * exp(-this->__z(k)/HP);
+                humidity->field[i][j][k] = rho0 * exp(-this->__z(k)/Hrho);
             }
         }
     }
@@ -92,7 +96,15 @@ void ABox::setStandardProfiles(double T0, double P0, double rho0, double beta, d
 
 Profile ABox::getAltitudeProfileTemperature() {
     Profile res;
-    for (int k = 0; k < Nz; k++) res.push_back(T0 - beta * this->__z(k));
+    for (int k = 0; k < Nz; k++) {
+        for (std::map<std::pair<Height, Height>, std::function<double(double)>>::iterator it = beta.begin();
+             it != beta.end();
+             it++)
+            if ((it->first.first <= __z(k)) && (__z(k) < it->first.second)) {
+                res.push_back(T0 + it->second(__z(k)));
+                break;
+        }
+    }
     return res;
 }
 
@@ -217,7 +229,15 @@ Profile ABox::getAltitudeProfileTemperature(Averager *avr) {
             }
         }
         if (count) profile.push_back(val / count);
-        else profile.push_back(T0 - beta * this->__z(k));
+        else {
+            for (std::map<std::pair<Height, Height>, std::function<double(double)>>::iterator it = beta.begin();
+                 it != beta.end();
+                 it++)
+                if ((it->first.first <= __z(k)) && (__z(k) < it->first.second)) {
+                    profile.push_back(T0 + it->second(__z(k)));
+                    break;
+            }
+        }
     }
     return profile;
 }
