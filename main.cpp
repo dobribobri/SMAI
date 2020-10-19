@@ -149,43 +149,95 @@ int main(int argc, char *argv[])
 
 
 // H2O weighting functions deviation analysis.
+//    std::vector<double> z = ab->grid("z");
+//    Profile T = ab->getAltitudeProfileTemperature();
+//    Profile P = ab->getAltitudeProfilePressure();
+//    Profile rho = ab->getAltitudeProfileHumidity();
+//    double H2 = 2.1/PZ*(Nz-1);
+//    MDATA DATA;
+//    Measurement* m = new Measurement(&DATA);
+//    for (unsigned int j = 0; j < 30; j++) {
+//        double stddev = (j+1)*0.1;
+//        std::cout << stddev << std::endl;
+//        std::function<double(unsigned int)> lambda = [&H2,stddev](unsigned int i){ return exp(-double(i)/H2)*stddev; };
+//        std::vector<Profile> profiles = Variate::gaussian(rho, lambda, 1000);
+//        for (unsigned int i = 0; i < profiles[0].size(); i++) {
+//            std::vector<double> layerRho;
+//            for (unsigned int k = 0; k < profiles.size(); k++) layerRho.push_back(profiles[k][i]);
+//            std::map<Frequency, std::vector<double>> layerWH2O;
+//            //std::vector<Frequency> freqs = {18.0, 19.0, 20.0, 21.0, 22.2, 23.0, 24.0, 25.0, 26.0, 27.0};
+//            //std::vector<Frequency> freqs = {18.0, 19.0, 20.0, 21.0, 23.0, 24.0, 25.0, 26.0, 27.0};
+//            std::vector<Frequency> freqs = {21.0, 21.5, 22.0, 22.2, 22.24, 22.3, 22.4, 22.5, 23.0};
+//            //for (double f = 18.0; f <= 27.2; f += 0.2) {
+//            for (double f : freqs) {
+//                for (unsigned int k = 0; k < profiles.size(); k++)
+//                    //layerWH2O[f].push_back(model->gammaWVapor(f, T[i], P[i], profiles[k][i]) / profiles[k][i]);
+//                    layerWH2O[f].push_back(model->gammaWVapor(f, T[i], P[i], profiles[k][i]) / rho[i]);  // !!!
+//            }
+//            double height = i*(ab->PZ/(ab->Nz-1));
+//            //std::cout << "\nHeight: " << height << std::endl;
+//            //double stddev_recalc = Stat::StandardDeviation(rho[i], layerRho);
+//            //std::cout << "StdDev declared: " << lambda(i) << "\t|\tStdDev obtained: " << stddev_recalc << std::endl;
+//            Spectrum wh2o_value, wh2o_stddev;
+//            //for (double f = 18.0; f <= 27.2; f += 0.2) {
+//            for (double f : freqs) {
+//                double mean_wh2o = Stat::Mean(layerWH2O[f]);
+//                wh2o_value.push_back(std::make_pair(f, mean_wh2o));
+//                wh2o_stddev.push_back(std::make_pair(f*1000, Stat::StandardDeviation(mean_wh2o, layerWH2O[f])));
+//            }
+//            m->remember(wh2o_value, height);
+//            m->remember(wh2o_stddev, height);
+//        }
+//        std::ostringstream out;
+//        out.precision(1);
+//        out << std::fixed << stddev;
+//        //m->dump("stddev_" + out.str() + "_exp_full_range.txt");
+//        //m->dump("stddev_" + out.str() + "_exp_18-21_23-27GHz.txt");
+//        m->dump("stddev_" + out.str() + "_exp_21-23GHz.txt");
+//        m->clear();
+//    }
+//    exit(0);
+
+// H2O Weighting functions errors analysis.
     std::vector<double> z = ab->grid("z");
     Profile T = ab->getAltitudeProfileTemperature();
     Profile P = ab->getAltitudeProfilePressure();
-    Profile rho = ab->getAltitudeProfileHumidity();
-    double H2 = 2.1/PZ*(Nz-1);
+
     MDATA DATA;
     Measurement* m = new Measurement(&DATA);
-    for (unsigned int j = 0; j < 50; j++) {
-        double stddev = (j+1)*0.1;
-        std::cout << stddev << std::endl;
-        std::function<double(unsigned int)> lambda = [&H2,stddev](unsigned int i){ return exp(-double(i)/H2)*stddev; };
-        std::vector<Profile> profiles = Variate::gaussian(rho, lambda, 1000);
-        for (unsigned int i = 0; i < profiles[0].size(); i++) {
-            std::vector<double> layerRho;
-            for (unsigned int k = 0; k < profiles.size(); k++) layerRho.push_back(profiles[k][i]);
-            std::map<Frequency, std::vector<double>> layerWH2O;
-            for (double f = 18.0; f <= 27.2; f += 0.2) {
-                for (unsigned int k = 0; k < profiles.size(); k++)
-                    layerWH2O[f].push_back(model->gammaWVapor(f, T[i], P[i], profiles[k][i]) / profiles[k][i]);
-            }
-            double height = i*(ab->PZ/(ab->Nz-1));
-            //std::cout << "\nHeight: " << height << std::endl;
-            //double stddev_recalc = Stat::StandardDeviation(rho[i], layerRho);
-            //std::cout << "StdDev declared: " << lambda(i) << "\t|\tStdDev obtained: " << stddev_recalc << std::endl;
-            Spectrum wh2o_stddev;
-            for (double f = 18.0; f <= 27.2; f += 0.2) {
-                double mean_wh2o = model->gammaWVapor(f, T[i], P[i], rho[i]) / rho[i];
-                wh2o_stddev.push_back(std::make_pair(f, Stat::StandardDeviation(mean_wh2o, layerWH2O[f])));
-            }
-            m->remember(wh2o_stddev, height);
+
+    std::vector<Frequency> freqs = {18.0, 19.0, 20.0, 21.0, 21.5, 22.0, 22.2, 22.24, 22.3, 22.4, 22.5, 23.0, 24.0, 25.0, 26.0, 27.0};
+    //std::vector<Frequency> freqs = {18.0, 19.0, 20.0, 21.0, 23.0, 24.0, 25.0, 26.0, 27.0};
+    //std::vector<Frequency> freqs = {21.0, 21.5, 22.0, 22.2, 22.24, 22.3, 22.4, 22.5, 23.0};
+
+    Profile rho = ab->getAltitudeProfileHumidity();
+
+    ab->rho0 = 3.;
+    Profile rho3 = ab->getAltitudeProfileHumidity();
+    for (double f : freqs) {
+        std::vector<double> WH2O;
+        for (unsigned int i = 0; i < rho.size(); i++) {
+            WH2O.push_back(model->gammaWVapor(f, T[i], P[i], rho3[i]) / rho[i]);
+            //WH2O.push_back(model->gammaWVapor(f, T[i], P[i], rho[i]) / rho[i]);
         }
-        std::ostringstream out;
-        out.precision(1);
-        out << std::fixed << stddev;
-        m->dump("WH2O_deviations_on_height_40km__rho(0)_stddev_" + out.str() + ".txt");
-        m->clear();
+        m->remember(f, z, WH2O);
     }
+
+    ab->rho0 = 20.;
+    Profile rho20 = ab->getAltitudeProfileHumidity();
+    for (double f : freqs) {
+        std::vector<double> WH2O;
+        for (unsigned int i = 0; i < rho.size(); i++) {
+            WH2O.push_back(model->gammaWVapor(f, T[i], P[i], rho20[i]) / rho[i]);
+            //WH2O.push_back(model->gammaWVapor(f, T[i], P[i], rho[i] + 1) / (rho[i]));
+            //WH2O.push_back(model->gammaWVapor(f, T[i], P[i], rho[i] + 0.001) / (rho[i]));
+        }
+        m->remember(f*1000, z, WH2O);
+    }
+
+    m->dump("wfuncs_rho_3_20_full_range.txt");
+    //m->dump("wfuncs_rho_p1_f_18-21_23-27GHz.txt");
+    //m->dump("wfuncs_rho_p0.001_f_21-23GHz.txt");
     exit(0);
 
     ab->applyStructuralInhomogeneities(false);
